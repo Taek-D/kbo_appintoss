@@ -29,11 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. 유저가 앱을 재진입하면 이전에 선택한 응원팀이 그대로 표시된다
   4. 유저는 응원팀을 변경하거나 알림 구독을 해제할 수 있다
   5. Supabase에 users, games, push_logs 테이블이 생성되고, 토스 Push 메시지 템플릿 검수가 신청된다
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: DB 스키마 설계 및 Supabase 마이그레이션 (users, games, push_logs) + 토스 콘솔 앱 등록 + 검수 신청
-- [ ] 01-02: 토스 SDK 로그인 + 응원팀 선택 온보딩 UI + 구독/해제 기능
+- [ ] 01-01-PLAN.md — 프로젝트 스캐폴딩 + DB 스키마 마이그레이션 + 공유 타입 + Vitest 설정 + 템플릿 검수 신청
+- [ ] 01-02-PLAN.md — Auth 모듈 TDD (user-repository + toss-client + API Routes)
+- [ ] 01-03-PLAN.md — 온보딩 UI (로그인 + 팀 선택) + 메인 화면 + 구독 관리 UX
 
 ### Phase 2: Data Pipeline
 **Goal**: 시스템이 KBO 경기 데이터를 실시간으로 수집하고, 경기 종료 시점을 정확하게 감지하며, 상태가 DB에 영속화된다
@@ -90,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/2 | Not started | - |
+| 1. Foundation | 0/3 | Planning complete | - |
 | 2. Data Pipeline | 0/2 | Not started | - |
 | 3. Push Notification | 0/2 | Not started | - |
 | 4. Game Result UI | 0/2 | Not started | - |
