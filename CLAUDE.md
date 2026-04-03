@@ -37,7 +37,25 @@ KBO 경기 종료 알림 서비스. 토스 미니앱 생태계 기반으로, 응
 - MVP 범위 외 기능 추가
 - Over Engineering (불필요한 추상화, 미래 대비 설계)
 
+## 개발 명령어
+```bash
+pnpm dev          # 개발 서버
+pnpm build        # 프로덕션 빌드
+pnpm typecheck    # TypeScript 타입 검사
+pnpm lint         # ESLint 검사
+pnpm test --run   # 전체 테스트 (vitest)
+pnpm test --watch # 테스트 워치 모드
+```
+
+## 타입 컨벤션
+- `type` 선호, `interface` 자제
+- **`enum` 절대 금지** → 문자열 리터럴 유니온 사용
+- `any` 타입 사용 금지 → `unknown` + 타입 가드
+- Zod 스키마로 외부 입력 검증 및 타입 추론
+- 모듈 간 통신 타입은 `types/` 디렉토리에 정의
+
 ## 컨벤션
 - 커밋 메시지: 한국어, 동사형 시작 (예: "추가: 크롤러 모듈 테스트")
 - 브랜치: feature/, fix/, test/ 접두사
 - 테스트 파일: `__tests__/` 디렉토리 또는 `.test.ts` 접미사
+- console.log 금지 → 적절한 로거 사용

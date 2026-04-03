@@ -10,6 +10,16 @@
           }
         ]
       }
+    ],
+    "PreCommit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm typecheck 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   },
   "permissions": {
@@ -23,9 +33,16 @@
       "Bash(pnpm install*)",
       "Bash(pnpm add*)",
       "Bash(npx supabase*)",
-      "Bash(npx prisma*)"
+      "Bash(npx prisma*)",
+      "Bash(npx vitest*)"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(DROP TABLE*)",
+      "Bash(DROP DATABASE*)"
+    ],
     "ask": []
   }
 }
