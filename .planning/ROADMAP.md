@@ -64,7 +64,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Push 타입 정의 + Service Role 클라이언트 + PushProvider mTLS TDD (인증서 검증, API 통신, 에러 핸들링)
+- [x] 03-01-PLAN.md — Push 타입 정의 + Service Role 클라이언트 + PushProvider mTLS TDD (인증서 검증, API 통신, 에러 핸들링)
 - [ ] 03-02-PLAN.md — NotificationService TDD (구독자 조회, 순차 발송, push_logs, Promise.allSettled) + poll/route.ts 통합
 
 ### Phase 4: Game Result UI
@@ -92,5 +92,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/3 | Planning complete | - |
 | 2. Data Pipeline | 2/2 | Complete   | 2026-04-05 |
-| 3. Push Notification | 0/2 | Planning complete | - |
+| 3. Push Notification | 1/2 | Executing | - |
 | 4. Game Result UI | 0/2 | Not started | - |

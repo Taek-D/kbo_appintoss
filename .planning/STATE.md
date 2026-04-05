@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 03 context gathered
-last_updated: "2026-04-05T10:14:50.065Z"
+stopped_at: "Completed 03-push-notification/03-01-PLAN.md"
+last_updated: "2026-04-05T11:03:00.000Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 5
-  completed_plans: 5
-  percent: 0
+  completed_plans: 6
+  percent: 60
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 3
-Plan: Not started
-Status: Ready to execute
+Plan: 01 complete, 02 next
+Status: Executing
 Last activity: 2026-04-05
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P03 | 6min | 3 tasks | 9 files |
 | Phase 02 P01 | 8min | 2 tasks | 10 files |
 | Phase 02-data-pipeline P02 | 8min | 2 tasks | 4 files |
+| Phase 03-push-notification P01 | 15min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,10 @@ Recent decisions affecting current work:
 - [Phase 02-data-pipeline]: [Phase 02-02]: QStash Receiver 모듈 레벨 싱글턴 초기화 — Vercel 서버리스 cold start 최적화
 - [Phase 02-data-pipeline]: [Phase 02-02]: 크롤링 실패 시 200 반환으로 QStash 자동 재시도 방지 (D-01)
 - [Phase 02-data-pipeline]: [Phase 02-02]: vi.hoisted()로 Receiver 생성자 모킹 — vitest 호이스팅 이슈 해결 패턴
+- [Phase 03-01]: mTLS 인증서는 TOSS_MTLS_CERT/KEY 환경변수에 base64 인코딩 저장, Buffer.from(x, 'base64')로 런타임 디코딩 → https.Agent 전달
+- [Phase 03-01]: createServiceRoleClient() 추가 — QStash webhook(poll/route.ts)은 cookies() 없어 createServerSupabaseClient() 사용 불가
+- [Phase 03-01]: vitest 생성자 모킹 패턴 확립 — mockImplementation(function(this){Object.assign(this, instance)}) 사용
+- [Phase 03-01]: TOSS_PUSH_API_URL 환경변수로 관리 — 하드코딩 방지, 테스트 오버라이드 가능
 
 ### Pending Todos
 
@@ -94,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T10:14:50.061Z
-Stopped at: Phase 03 context gathered
-Resume file: .planning/phases/03-push-notification/03-CONTEXT.md
+Last session: 2026-04-05T11:03:00.000Z
+Stopped at: Completed 03-push-notification/03-01-PLAN.md
+Resume file: .planning/phases/03-push-notification/03-01-SUMMARY.md

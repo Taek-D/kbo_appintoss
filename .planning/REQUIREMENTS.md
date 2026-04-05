@@ -24,9 +24,9 @@ Requirements for initial release. Each maps to roadmap phases.
 ### 알림 발송
 
 - [ ] **PUSH-01**: 경기 종료 감지 시 해당 팀 구독자에게 토스 푸시 알림을 발송한다
-- [ ] **PUSH-02**: 알림 발송은 100ms 간격의 순차 큐로 Rate Limit을 준수한다
+- [x] **PUSH-02**: 알림 발송은 100ms 간격의 순차 큐로 Rate Limit을 준수한다
 - [ ] **PUSH-03**: 동시에 여러 경기가 종료되어도 각 경기 발송이 서로 블로킹하지 않는다
-- [ ] **PUSH-04**: mTLS 인증서를 통한 토스 Push API 인증이 정상 동작한다
+- [x] **PUSH-04**: mTLS 인증서를 통한 토스 Push API 인증이 정상 동작한다
 - [ ] **PUSH-05**: 발송 결과 및 에러를 push_logs에 기록한다
 
 ### 경기 결과 UI
@@ -90,9 +90,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | DATA-03 | Deferred | Deferred to post-MVP (per CONTEXT.md D-08) |
 | DATA-04 | Phase 2 | Complete |
 | PUSH-01 | Phase 3 | Pending |
-| PUSH-02 | Phase 3 | Pending |
+| PUSH-02 | Phase 3 | Complete |
 | PUSH-03 | Phase 3 | Pending |
-| PUSH-04 | Phase 3 | Pending |
+| PUSH-04 | Phase 3 | Complete |
 | PUSH-05 | Phase 3 | Pending |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
