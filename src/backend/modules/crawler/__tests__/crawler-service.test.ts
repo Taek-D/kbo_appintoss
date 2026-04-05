@@ -10,31 +10,33 @@ vi.mock('kbo-game', () => ({
 // 모듈은 RED 단계에서 아직 구현 전
 import { fetchTodayGames } from '../crawler-service'
 
-// kbo-game의 Game 타입 (RESEARCH.md 기준)
+// kbo-game의 실제 Game 타입 (node_modules/kbo-game/dist/index.d.ts 기준)
 type KboGame = {
   id: string
-  date: string
+  date: Date
   startTime: string
-  season: string
+  stadium: string
   homeTeam: string
   awayTeam: string
   status: 'SCHEDULED' | 'IN_PROGRESS' | 'FINISHED' | 'CANCELED'
-  homeScore: number
-  awayScore: number
-  currentInning: number
+  score?: { home: number; away: number }
+  currentInning?: number
+  broadcastServices: string[]
+  season: number
 }
 
 const mockKboGame: KboGame = {
   id: 'kbo-game-001',
-  date: '20260405',
+  date: new Date('2026-04-05'),
   startTime: '18:30',
-  season: '2026',
+  stadium: '잠실',
   homeTeam: 'LG',
   awayTeam: 'KT',
   status: 'SCHEDULED',
-  homeScore: 0,
-  awayScore: 0,
+  score: { home: 0, away: 0 },
   currentInning: 0,
+  broadcastServices: [],
+  season: 2026,
 }
 
 describe('fetchTodayGames', () => {

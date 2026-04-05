@@ -15,7 +15,9 @@ export type Game = {
   inning_data: Record<string, unknown> | null
   started_at: string | null
   finished_at: string | null
-  is_notified: boolean
+  is_notified_start: boolean
+  is_notified_finish: boolean
+  is_notified_cancel: boolean
   created_at: string
   updated_at: string
 }
