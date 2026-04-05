@@ -191,8 +191,11 @@ describe('createPushProvider', () => {
     process.env.TOSS_MTLS_CERT = certBase64
     process.env.TOSS_MTLS_KEY = keyBase64
 
+    // vi.fn()을 new로 호출 가능하게 하려면 function 키워드 사용
     const mockAgentInstance = { _isMockAgent: true }
-    MockAgent.mockReturnValue(mockAgentInstance)
+    MockAgent.mockImplementation(function (this: unknown) {
+      Object.assign(this as object, mockAgentInstance)
+    })
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -213,8 +216,9 @@ describe('createPushProvider', () => {
       key: Buffer.from(keyBase64, 'base64'),
     })
 
-    // fetch에 agent 옵션이 전달되었는지 확인
+    // fetch에 agent 옵션이 전달되었는지 확인 (agent 속성이 존재함)
     const [, options] = mockFetch.mock.calls[0]
-    expect(options.agent).toBe(mockAgentInstance)
+    expect(options.agent).toBeDefined()
+    expect(options.agent._isMockAgent).toBe(true)
   })
 })
