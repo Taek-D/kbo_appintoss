@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { PushProvider, TossPushResponse } from '@/types/push'
 import type { StateTransition } from '@/types/crawler'
 
@@ -11,24 +11,12 @@ import type { StateTransition } from '@/types/crawler'
  */
 
 // --- vi.hoisted: vi.mock 팩토리보다 먼저 초기화되는 변수 ---
-const {
-  mockFrom,
-  mockSelect,
-  mockInsert,
-  mockUpdate,
-  mockEq,
-  mockIn,
-  mockSingle,
-} = vi.hoisted(() => {
-  const mockSingle = vi.fn()
+const { mockFrom, mockInsert, mockUpdate, mockEq } = vi.hoisted(() => {
   const mockEq = vi.fn()
-  const mockIn = vi.fn()
-  const mockSelect = vi.fn()
   const mockInsert = vi.fn()
   const mockUpdate = vi.fn()
   const mockFrom = vi.fn()
-
-  return { mockFrom, mockSelect, mockInsert, mockUpdate, mockEq, mockIn, mockSingle }
+  return { mockFrom, mockInsert, mockUpdate, mockEq }
 })
 
 // --- Supabase mock ---
@@ -57,9 +45,7 @@ const mockPushProvider: PushProvider = {
 }
 
 // --- 테스트 데이터 헬퍼 ---
-function makeTransition(
-  overrides: Partial<StateTransition> = {}
-): StateTransition {
+function makeTransition(overrides: Partial<StateTransition> = {}): StateTransition {
   return {
     gameId: 'game-uuid-001',
     kboGameId: 'kbo-001',
@@ -84,22 +70,32 @@ function makeUser(id: string, tossKey: string) {
   return { id, toss_user_key: tossKey }
 }
 
-// --- Supabase chain helper ---
-// users 조회 체인: from('users').select(...).in(...) -> { data, error }
+/**
+ * users 조회 체인 mock 설정:
+ * from('users').select('id, toss_user_key').in('team_code', [...]).eq('subscribed', true)
+ * -> { data: users, error: null }
+ */
 function setupUsersQuery(users: Array<{ id: string; toss_user_key: string }>) {
-  const chainEnd = { data: users, error: null }
-  mockIn.mockResolvedValueOnce(chainEnd)
-  mockSelect.mockReturnValueOnce({ in: mockIn })
-  mockFrom.mockReturnValueOnce({ select: mockSelect })
+  const usersEq = vi.fn().mockResolvedValueOnce({ data: users, error: null })
+  const usersIn = vi.fn().mockReturnValueOnce({ eq: usersEq })
+  const usersSelect = vi.fn().mockReturnValueOnce({ in: usersIn })
+  mockFrom.mockReturnValueOnce({ select: usersSelect })
+  return { usersSelect, usersIn, usersEq }
 }
 
-// push_logs 삽입 체인: from('push_logs').insert(...) -> { error }
+/**
+ * push_logs 삽입 체인 mock 설정:
+ * from('push_logs').insert(...) -> { error: null }
+ */
 function setupLogsInsert(error: null | { message: string } = null) {
   mockInsert.mockResolvedValueOnce({ error })
   mockFrom.mockReturnValueOnce({ insert: mockInsert })
 }
 
-// games 업데이트 체인: from('games').update(...).eq(...) -> { error }
+/**
+ * games 업데이트 체인 mock 설정:
+ * from('games').update(...).eq('id', gameId) -> { error: null }
+ */
 function setupGamesUpdate(error: null | { message: string } = null) {
   mockEq.mockResolvedValueOnce({ error })
   mockUpdate.mockReturnValueOnce({ eq: mockEq })
@@ -121,10 +117,10 @@ describe('sendGameEndNotifications', () => {
     vi.useRealTimers()
   })
 
-  // Test 1: homeTeam 구독자 조회
+  // Test 1: homeTeam + awayTeam으로 구독자 조회 (in 쿼리)
   it('Test 1: transition.game.homeTeam="LG"일 때 team_code in ["LG","KT"]로 구독자를 조회한다', async () => {
-    const transition = makeTransition({ game: { ...makeTransition().game, homeTeam: 'LG', awayTeam: 'KT' } })
-    setupUsersQuery([])
+    const transition = makeTransition()
+    const { usersIn } = setupUsersQuery([])
     setupGamesUpdate()
 
     const promise = sendGameEndNotifications([transition], mockPushProvider)
@@ -132,10 +128,10 @@ describe('sendGameEndNotifications', () => {
     await promise
 
     expect(mockFrom).toHaveBeenCalledWith('users')
-    expect(mockIn).toHaveBeenCalledWith('team_code', ['LG', 'KT'])
+    expect(usersIn).toHaveBeenCalledWith('team_code', ['LG', 'KT'])
   })
 
-  // Test 2: 홈팀 + 원정팀 구독자 합산
+  // Test 2: 홈팀 + 원정팀 구독자 합산 발송
   it('Test 2: 홈팀(LG)과 원정팀(KT) 구독자 모두 조회하여 합산한다', async () => {
     const users = [
       makeUser('user-1', 'toss-key-1'),
@@ -173,7 +169,7 @@ describe('sendGameEndNotifications', () => {
     expect(mockPushProvider.send).not.toHaveBeenCalled()
   })
 
-  // Test 4: 3명 구독자 순차 발송 + 100ms 간격 검증
+  // Test 4: 3명 순차 발송 + 100ms 간격 검증
   it('Test 4: 3명 구독자 순차 발송 시 send()가 3번 호출되고 각 호출 사이 100ms 이상 간격이 존재한다', async () => {
     const users = [
       makeUser('u1', 'key-1'),
@@ -225,7 +221,7 @@ describe('sendGameEndNotifications', () => {
     expect(sendMock).toHaveBeenCalledTimes(2)
   })
 
-  // Test 6: 재시도도 실패 -> push_logs에 'rate_limited' 기록 + 다음 유저로 진행
+  // Test 6: 재시도도 실패 -> push_logs에 'rate_limited' + 다음 유저로 진행
   it('Test 6: 재시도도 실패하면 push_logs에 "rate_limited"로 기록 후 다음 유저로 진행한다', async () => {
     const users = [makeUser('u1', 'key-1'), makeUser('u2', 'key-2')]
     const transition = makeTransition()
@@ -244,15 +240,13 @@ describe('sendGameEndNotifications', () => {
     await vi.runAllTimersAsync()
     await promise
 
-    // u2는 성공적으로 발송
     expect(sendMock).toHaveBeenCalledTimes(3)
-    // rate_limited 기록 확인
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'rate_limited' })
     )
   })
 
-  // Test 7: 개별 유저 발송 실패 -> push_logs status='failed' + 다음 유저 계속
+  // Test 7: 발송 실패(401) -> push_logs status='failed' + 다음 유저 계속
   it('Test 7: 발송 실패(401) 시 push_logs에 status="failed" 기록 후 다음 유저로 계속 진행한다', async () => {
     const users = [makeUser('u1', 'key-1'), makeUser('u2', 'key-2')]
     const transition = makeTransition()
@@ -276,7 +270,7 @@ describe('sendGameEndNotifications', () => {
     )
   })
 
-  // Test 8: 발송 성공 -> push_logs status='sent' 기록
+  // Test 8: 발송 성공 -> push_logs status='sent'
   it('Test 8: 발송 성공 시 push_logs에 status="sent"를 기록한다', async () => {
     const users = [makeUser('u1', 'key-1')]
     const transition = makeTransition()
@@ -297,23 +291,41 @@ describe('sendGameEndNotifications', () => {
     )
   })
 
-  // Test 9: 2개 StateTransition -> Promise.allSettled로 병렬 처리
+  // Test 9: 2개 StateTransition -> Promise.allSettled 병렬 처리
   it('Test 9: 2개의 StateTransition(finished, cancelled)을 전달하면 Promise.allSettled로 병렬 처리되어 둘 다 완료된다', async () => {
     const t1 = makeTransition({ gameId: 'game-001', toStatus: 'finished' })
     const t2 = makeTransition({ gameId: 'game-002', toStatus: 'cancelled' })
 
-    // t1: users 조회 -> 1명
-    setupUsersQuery([makeUser('u1', 'key-1')])
-    setupLogsInsert()
-    setupGamesUpdate()
-
-    // t2: users 조회 -> 1명
-    setupUsersQuery([makeUser('u2', 'key-2')])
-    setupLogsInsert()
-    setupGamesUpdate()
-
     const sendMock = mockPushProvider.send as ReturnType<typeof vi.fn>
     sendMock.mockResolvedValue({ success: true })
+
+    // Promise.allSettled는 병렬 실행이므로 mockFrom 큐 순서가 보장되지 않음
+    // 각 게임마다 users 조회 + push_logs insert + games update 순서로 from()이 호출됨
+    // 총 6번 from()이 호출되어야 함 (2경기 × 3호출)
+    // mockFrom을 동적으로 처리하도록 구성
+    const makeUsersChain = (users: Array<{ id: string; toss_user_key: string }>) => {
+      const eq = vi.fn().mockResolvedValue({ data: users, error: null })
+      const inFn = vi.fn().mockReturnValue({ eq })
+      const select = vi.fn().mockReturnValue({ in: inFn })
+      return { select }
+    }
+    const makeLogsChain = () => {
+      const insert = vi.fn().mockResolvedValue({ error: null })
+      return { insert }
+    }
+    const makeGamesChain = () => {
+      const eq = vi.fn().mockResolvedValue({ error: null })
+      const update = vi.fn().mockReturnValue({ eq })
+      return { update }
+    }
+
+    // mockFrom이 table 이름에 따라 적절한 체인을 반환하도록 설정
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'users') return makeUsersChain([makeUser(table + '-uid', table + '-key')])
+      if (table === 'push_logs') return makeLogsChain()
+      if (table === 'games') return makeGamesChain()
+      return {}
+    })
 
     const promise = sendGameEndNotifications([t1, t2], mockPushProvider)
     await vi.runAllTimersAsync()
@@ -327,12 +339,11 @@ describe('sendGameEndNotifications', () => {
     const t1 = makeTransition({ gameId: 'game-001', toStatus: 'finished' })
     const t2 = makeTransition({ gameId: 'game-002', toStatus: 'finished' })
 
-    // t1: 에러 발생 (from('users') throws)
-    mockFrom.mockReturnValueOnce({
-      select: vi.fn().mockReturnValue({
-        in: vi.fn().mockRejectedValueOnce(new Error('DB error')),
-      }),
-    })
+    // t1: DB error (users 조회 실패)
+    const errorEq = vi.fn().mockRejectedValueOnce(new Error('DB error'))
+    const errorIn = vi.fn().mockReturnValueOnce({ eq: errorEq })
+    const errorSelect = vi.fn().mockReturnValueOnce({ in: errorIn })
+    mockFrom.mockReturnValueOnce({ select: errorSelect })
 
     // t2: 정상 흐름
     setupUsersQuery([makeUser('u2', 'key-2')])
@@ -346,7 +357,6 @@ describe('sendGameEndNotifications', () => {
     await vi.runAllTimersAsync()
     await promise
 
-    // t2의 발송은 정상 완료
     expect(sendMock).toHaveBeenCalledTimes(1)
     expect(sendMock).toHaveBeenCalledWith(
       expect.objectContaining({ userKey: 'key-2' })
@@ -364,7 +374,8 @@ describe('sendGameEndNotifications', () => {
     await vi.runAllTimersAsync()
     await promise
 
-    expect(mockFrom).toHaveBeenCalledWith('games')
+    // mockFrom이 'users', 'push_logs', 'games' 순서로 3번 호출됨
+    expect(mockFrom).toHaveBeenNthCalledWith(3, 'games')
     expect(mockUpdate).toHaveBeenCalledWith({ is_notified_finish: true })
     expect(mockEq).toHaveBeenCalledWith('id', 'game-uuid-001')
   })
@@ -372,13 +383,7 @@ describe('sendGameEndNotifications', () => {
   // Test 12: toStatus='cancelled' -> is_notified_cancel=true 업데이트
   it('Test 12: toStatus="cancelled" 발송 완료 후 games 테이블의 is_notified_cancel이 true로 업데이트된다', async () => {
     const transition = makeTransition({ gameId: 'game-uuid-002', toStatus: 'cancelled' })
-
-    // users 조회
-    const chainEnd = { data: [makeUser('u1', 'key-1')], error: null }
-    mockIn.mockResolvedValueOnce(chainEnd)
-    mockSelect.mockReturnValueOnce({ in: mockIn })
-    mockFrom.mockReturnValueOnce({ select: mockSelect })
-
+    setupUsersQuery([makeUser('u1', 'key-1')])
     setupLogsInsert()
     setupGamesUpdate()
 
