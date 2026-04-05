@@ -44,7 +44,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### 인프라 & 검수
 
-- [ ] **INFRA-01**: Supabase에 users, games, push_logs 테이블이 구성된다
+- [x] **INFRA-01**: Supabase에 users, games, push_logs 테이블이 구성된다
 - [ ] **INFRA-02**: 토스 Push 메시지 템플릿이 검수를 통과한다
 - [ ] **INFRA-03**: 경기 상태는 DB에 영속화되어 서버 재시작에도 유지된다
 
@@ -76,7 +76,7 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Pending |
 | AUTH-01 | Phase 1 | Pending |

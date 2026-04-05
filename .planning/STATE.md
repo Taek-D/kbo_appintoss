@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-04-03T13:22:26.345Z"
-last_activity: 2026-04-03 — Roadmap created, ready to begin Phase 1 planning
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-04-05T03:54:37.934Z"
+last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,20 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** 응원팀 경기가 끝나는 즉시 유저에게 결과를 알려주는 것 — 빠르고 정확한 경기 종료 알림
-**Current focus:** Phase 1 - Foundation
+**Current focus:** Phase 01 — foundation
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-04-03 — Roadmap created, ready to begin Phase 1 planning
+Phase: 01 (foundation) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-05
 
 Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: -
 - Total execution time: -
@@ -46,10 +47,12 @@ Progress: [░░░░░░░░░░] 0%
 | - | - | - | - |
 
 **Recent Trend:**
+
 - Last 5 plans: -
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01 P01 | 15min | 1 tasks | 30 files |
 
 ## Accumulated Context
 
@@ -59,9 +62,11 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - Phase 1: 토스 Push 메시지 템플릿 검수를 Day 1에 신청해야 함 (검수 지연 시 KBO 시즌 타이밍 윈도우 상실)
-- Phase 2: kbo-game 패키지 존재 여부 미확인(LOW confidence) — 킥오프 직후 npm install 검증 필수, 불가 시 네이버 스포츠 크롤러로 대체
-- Phase 2: 폴링 워커는 Vercel 서버리스 불가 — Fly.io 또는 Railway 퍼시스턴트 프로세스 결정 필요 (Phase 1 완료 전 확정)
+- Phase 2: kbo-game@0.0.2 검증 완료(2026-04-04) — getGame(Date)→Game[], 경기 상태(SCHEDULED/IN_PROGRESS/FINISHED/CANCELED), 스코어, 이닝 제공. k-skill 참고 문서 확인됨
+- Phase 2: 폴링 워커는 Vercel Cron Jobs(1분 간격)으로 구현 결정(2026-04-04) — 별도 서버 불필요, 30초 폴링은 MVP 이후 최적화
 - Phase 3: mTLS 인증서 발급 절차는 토스 콘솔 접속 후 직접 확인 필요
+- [Phase 01]: @supabase/ssr 사용 (deprecated auth-helpers-nextjs 대신)
+- [Phase 01]: enum 금지, 문자열 리터럴 유니온 패턴 적용 (TeamCode, GameStatus)
 
 ### Pending Todos
 
@@ -69,12 +74,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- kbo-game npm 패키지 존재 미확인 — Phase 2 시작 전 즉시 검증 필요
-- 토스 Push 메시지 템플릿 검수 신청 — Phase 1 Day 1에 병행 진행 필수
-- 폴링 워커 호스팅(Fly.io vs Railway) 미결정 — Phase 1 완료 전 확정 필요
+- ~~kbo-game npm 패키지~~ ✅ 해결 (2026-04-04) — v0.0.2 확인, 프로젝트 요구사항 충족
+- ~~토스 Push 템플릿 검수~~ ✅ 해결 (2026-04-04) — 앱 개발 완료 후 검수 신청 예정, 현재 블로커 아님
+- ~~폴링 워커 호스팅~~ ✅ 해결 (2026-04-04) — Vercel Cron Jobs 1분 간격으로 결정, 별도 서버 불필요
 
 ## Session Continuity
 
-Last session: 2026-04-03T13:22:26.342Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-foundation/01-CONTEXT.md
+Last session: 2026-04-05T03:54:37.930Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
