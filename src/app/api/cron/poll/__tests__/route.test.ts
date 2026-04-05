@@ -1,13 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import type { StateTransition } from '@/types/crawler'
 
+// --- vi.hoisted: vi.mock 팩토리보다 먼저 초기화되는 변수 ---
+const { mockVerify } = vi.hoisted(() => ({
+  mockVerify: vi.fn().mockResolvedValue(undefined),
+}))
+
 // --- 모킹 설정 ---
 
-vi.mock('@upstash/qstash', () => ({
-  Receiver: vi.fn().mockImplementation(() => ({
-    verify: vi.fn().mockResolvedValue(undefined),
-  })),
-}))
+vi.mock('@upstash/qstash', () => {
+  return {
+    Receiver: vi.fn().mockImplementation(function (
+      this: { verify: typeof mockVerify }
+    ) {
+      this.verify = mockVerify
+    }),
+  }
+})
 
 vi.mock('@/backend/modules/crawler', () => ({
   fetchTodayGames: vi.fn(),
@@ -24,7 +33,6 @@ vi.mock('@/lib/logger', () => ({
 }))
 
 // 모킹된 모듈 import
-import { Receiver } from '@upstash/qstash'
 import { fetchTodayGames, syncGames } from '@/backend/modules/crawler'
 import { logger } from '@/lib/logger'
 import { POST } from '../route'
@@ -72,14 +80,11 @@ const mockTransitions: StateTransition[] = [
 // --- 테스트 스위트 ---
 
 describe('POST /api/cron/poll', () => {
-  let mockReceiver: { verify: ReturnType<typeof vi.fn> }
-
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Receiver 인스턴스의 verify를 기본적으로 성공으로 설정
-    mockReceiver = { verify: vi.fn().mockResolvedValue(undefined) }
-    ;(Receiver as ReturnType<typeof vi.fn>).mockImplementation(() => mockReceiver)
+    // 기본값: 서명 검증 성공
+    mockVerify.mockResolvedValue(undefined)
 
     // 경기 시간대(UTC 07:00 = KST 16:00) 설정
     vi.useFakeTimers()
@@ -115,7 +120,7 @@ describe('POST /api/cron/poll', () => {
   })
 
   it('Test 3: QStash 서명 검증 실패(Receiver.verify throws) -> 401 Invalid signature', async () => {
-    mockReceiver.verify.mockRejectedValue(new Error('Invalid signature'))
+    mockVerify.mockRejectedValue(new Error('Invalid signature'))
 
     const req = createMockRequest({ signature: 'invalid-signature', body: '' })
     const res = await POST(req)
