@@ -23,9 +23,9 @@ export async function fetchTodayGames(): Promise<CrawlerResult> {
       homeTeam: game.homeTeam,
       awayTeam: game.awayTeam,
       status: mapKboStatusToDb(game.status),
-      homeScore: game.homeScore,
-      awayScore: game.awayScore,
-      currentInning: game.currentInning,
+      homeScore: game.score?.home ?? 0,
+      awayScore: game.score?.away ?? 0,
+      currentInning: game.currentInning ?? 0,
       startTime: game.startTime,
     }))
 
@@ -38,11 +38,12 @@ export async function fetchTodayGames(): Promise<CrawlerResult> {
 }
 
 /**
- * YYYYMMDD 형식의 날짜를 YYYY-MM-DD 형식으로 변환한다.
+ * Date 객체를 YYYY-MM-DD 형식으로 변환한다.
+ * kbo-game의 game.date는 Date 객체이다.
  */
-function formatDate(date: string): string {
-  if (date.length === 8) {
-    return `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`
-  }
-  return date
+function formatDate(date: Date): string {
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
 }
