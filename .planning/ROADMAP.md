@@ -77,11 +77,11 @@ Plans:
   3. 스코어 카운트업 GSAP 애니메이션이 SSR 오류 없이 동작한다
   4. Lenis 기반 부드러운 스크롤이 전체 페이지에서 동작한다
   5. 응원팀 경기가 없는 날 "오늘 경기 없음" 화면이 표시되며, 서비스 전체가 토스 화이트톤 디자인으로 일관되게 구현된다
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: 경기 결과 페이지 (스코어 + 이닝 데이터) + GSAP 카운트업 애니메이션 + Lenis 스크롤 (SSR 가드 포함)
-- [ ] 04-02: 딥링크 라우팅 + "오늘 경기 없음" 화면 + 토스 디자인 시스템 적용 + E2E 통합 검증
+- [ ] 04-01-PLAN.md — API Routes (games/today, games/[id]) + ScoreBoard/InningTable/GameCard 컴포넌트 TDD + /game/[id] 결과 페이지 (GSAP 카운트업 + Lenis 스크롤)
+- [ ] 04-02-PLAN.md — 메인 화면 경기 데이터 연동 (GameCard + 응원팀 강조 + 네비게이션) + 토스 디자인 통합 시각 검증
 
 ## Progress
 
@@ -93,4 +93,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 0/3 | Planning complete | - |
 | 2. Data Pipeline | 2/2 | Complete   | 2026-04-05 |
 | 3. Push Notification | 1/2 | Executing | - |
-| 4. Game Result UI | 0/2 | Not started | - |
+| 4. Game Result UI | 0/2 | Planning complete | - |
