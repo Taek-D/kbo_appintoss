@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-04-05T03:54:37.934Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-04-05T04:06:02.052Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 01 (foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 15min | 1 tasks | 30 files |
+| Phase 01 P02 | 5min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - Phase 3: mTLS 인증서 발급 절차는 토스 콘솔 접속 후 직접 확인 필요
 - [Phase 01]: @supabase/ssr 사용 (deprecated auth-helpers-nextjs 대신)
 - [Phase 01]: enum 금지, 문자열 리터럴 유니온 패턴 적용 (TeamCode, GameStatus)
+- [Phase 01]: Zod z.enum()으로 TeamCode 런타임 검증 (enum 금지 준수)
+- [Phase 01]: session_token httpOnly secure cookie에 accessToken 직접 저장 (MVP 단순화)
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T03:54:37.930Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-04-05T04:06:02.049Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

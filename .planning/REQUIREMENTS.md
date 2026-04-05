@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### 인증 & 온보딩
 
-- [ ] **AUTH-01**: 유저는 토스 로그인으로 별도 회원가입 없이 서비스에 진입할 수 있다
-- [ ] **AUTH-02**: 유저는 10개 KBO 구단 중 하나를 응원팀으로 선택할 수 있다
-- [ ] **AUTH-03**: 유저는 재진입 시 기존 응원팀 설정이 유지된다
-- [ ] **AUTH-04**: 유저는 응원팀을 변경할 수 있다
+- [x] **AUTH-01**: 유저는 토스 로그인으로 별도 회원가입 없이 서비스에 진입할 수 있다
+- [x] **AUTH-02**: 유저는 10개 KBO 구단 중 하나를 응원팀으로 선택할 수 있다
+- [x] **AUTH-03**: 유저는 재진입 시 기존 응원팀 설정이 유지된다
+- [x] **AUTH-04**: 유저는 응원팀을 변경할 수 있다
 
 ### 데이터 수집
 
@@ -39,7 +39,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### 구독 관리
 
-- [ ] **SUB-01**: 유저는 알림 구독을 해제할 수 있다
+- [x] **SUB-01**: 유저는 알림 구독을 해제할 수 있다
 - [ ] **SUB-02**: 유저의 응원팀에 오늘 경기가 없으면 "오늘 경기 없음" 화면이 표시된다
 
 ### 인프라 & 검수
@@ -79,11 +79,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Pending |
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| SUB-01 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
+| SUB-01 | Phase 1 | Complete |
 | SUB-02 | Phase 1 | Pending |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
