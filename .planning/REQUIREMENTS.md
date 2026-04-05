@@ -78,7 +78,7 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-03 | Phase 2 | Pending |
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
@@ -87,7 +87,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | SUB-02 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
-| DATA-03 | Phase 2 | Pending |
+| DATA-03 | Deferred | Deferred to post-MVP (per CONTEXT.md D-08) |
 | DATA-04 | Phase 2 | Pending |
 | PUSH-01 | Phase 3 | Pending |
 | PUSH-02 | Phase 3 | Pending |
@@ -102,9 +102,10 @@ Deferred to future release. Tracked but not in current roadmap.
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 24
-- Unmapped: 0 ✓
+- Mapped to phases: 23
+- Deferred: 1 (DATA-03 — post-MVP optimization)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after roadmap creation*
+*Last updated: 2026-04-05 after Phase 2 plan revision*
