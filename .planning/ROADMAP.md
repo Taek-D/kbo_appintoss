@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — 프로젝트 스캐폴딩 + DB 스키마 마이그레이션 + 공유 타입 + Vitest 설정 + 템플릿 검수 신청
 - [x] 01-02-PLAN.md — Auth 모듈 TDD (user-repository + toss-client + API Routes)
-- [ ] 01-03-PLAN.md — 온보딩 UI (로그인 + 팀 선택) + 메인 화면 + 구독 관리 UX
+- [x] 01-03-PLAN.md — 온보딩 UI (로그인 + 팀 선택) + 메인 화면 + 구독 관리 UX
 
 ### Phase 2: Data Pipeline
 **Goal**: 시스템이 KBO 경기 데이터를 실시간으로 수집하고, 경기 종료 시점을 정확하게 감지하며, 상태가 DB에 영속화된다

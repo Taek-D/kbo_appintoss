@@ -40,7 +40,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### 구독 관리
 
 - [x] **SUB-01**: 유저는 알림 구독을 해제할 수 있다
-- [ ] **SUB-02**: 유저의 응원팀에 오늘 경기가 없으면 "오늘 경기 없음" 화면이 표시된다
+- [x] **SUB-02**: 유저의 응원팀에 오늘 경기가 없으면 "오늘 경기 없음" 화면이 표시된다
 
 ### 인프라 & 검수
 
@@ -84,7 +84,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 1 | Complete |
 | SUB-01 | Phase 1 | Complete |
-| SUB-02 | Phase 1 | Pending |
+| SUB-02 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 2 | Pending |
 | DATA-03 | Phase 2 | Pending |
