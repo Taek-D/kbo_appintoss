@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SubscriptionControl } from '@/components/SubscriptionControl'
+import { GameCard } from '@/components/GameCard'
 import { KBO_TEAMS } from '@/types/user'
 import type { User } from '@/types/user'
+import type { Game } from '@/types/game'
 
 /**
  * 메인 화면
  * - 현재 응원팀 표시 (SubscriptionControl)
- * - 오늘 경기 정보 (Phase 2에서 구현 예정, 현재는 "오늘 경기 없음" 안내)
+ * - 오늘 경기 목록 (GameCard + 응원팀 강조 + 종료 경기 탭 시 결과 화면 이동)
  * - 에러/로딩 상태 처리
  */
 export default function MainPage() {
@@ -17,6 +19,8 @@ export default function MainPage() {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [games, setGames] = useState<Game[]>([])
+  const [isGamesLoading, setIsGamesLoading] = useState(true)
 
   const fetchUser = useCallback(async () => {
     setIsLoading(true)
@@ -49,6 +53,26 @@ export default function MainPage() {
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
+
+  const fetchGames = useCallback(async () => {
+    setIsGamesLoading(true)
+    try {
+      const response = await fetch('/api/games/today')
+      if (response.ok) {
+        const data: unknown = await response.json()
+        const gamesData = data as { games: Game[] }
+        setGames(gamesData.games ?? [])
+      }
+    } catch {
+      setGames([])
+    } finally {
+      setIsGamesLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchGames()
+  }, [fetchGames])
 
   const handleUnsubscribe = () => {
     // 구독 해제 후 유저 정보 새로고침
@@ -128,28 +152,81 @@ export default function MainPage() {
       )}
 
       {/* 하단: 오늘 경기 정보 */}
-      {/* TODO: Phase 2에서 games API 연동 시 이 영역을 실제 경기 데이터로 교체 */}
-      <div className="mt-6 rounded-2xl bg-gray-50 p-6">
-        <div className="flex flex-col items-center gap-3 py-8">
-          {/* 야구공 아이콘 */}
-          <svg
-            className="h-12 w-12 text-gray-300"
-            fill="none"
-            viewBox="0 0 48 48"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <circle cx="24" cy="24" r="20" />
-            <path d="M16 8c2 4 2 8 0 12s-2 8 0 12" strokeLinecap="round" />
-            <path d="M32 8c-2 4-2 8 0 12s2 8 0 12" strokeLinecap="round" />
-          </svg>
-          <p className="text-base font-medium text-gray-500">
-            오늘은 {teamName} 경기가 없어요
-          </p>
-          <p className="text-xs text-gray-400">
-            경기가 있는 날 알림을 보내드릴게요
-          </p>
-        </div>
+      <div className="mt-6">
+        {isGamesLoading ? (
+          /* 경기 목록 스켈레톤 */
+          <div className="animate-pulse space-y-3">
+            <div className="h-20 rounded-xl bg-gray-100" />
+            <div className="h-20 rounded-xl bg-gray-100" />
+          </div>
+        ) : games.length === 0 ? (
+          /* 경기 없는 날 — 기존 UI 유지 (per D-07) */
+          <div className="rounded-2xl bg-gray-50 p-6">
+            <div className="flex flex-col items-center gap-3 py-8">
+              <svg className="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 48 48" stroke="currentColor" strokeWidth={1.5}>
+                <circle cx="24" cy="24" r="20" />
+                <path d="M16 8c2 4 2 8 0 12s-2 8 0 12" strokeLinecap="round" />
+                <path d="M32 8c-2 4-2 8 0 12s2 8 0 12" strokeLinecap="round" />
+              </svg>
+              <p className="text-base font-medium text-gray-500">
+                오늘은 {teamName} 경기가 없어요
+              </p>
+              <p className="text-xs text-gray-400">
+                경기가 있는 날 알림을 보내드릴게요
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* 경기 목록 */
+          <div className="space-y-3">
+            {/* 응원팀 경기 (상단 강조) */}
+            {(() => {
+              const myTeamGames = games.filter(
+                (g) => g.home_team === user.team_code || g.away_team === user.team_code
+              )
+              const otherGames = games.filter(
+                (g) => g.home_team !== user.team_code && g.away_team !== user.team_code
+              )
+              return (
+                <>
+                  {myTeamGames.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-[#0064FF]">내 팀 경기</p>
+                      <div className="space-y-2">
+                        {myTeamGames.map((game) => (
+                          <GameCard
+                            key={game.id}
+                            game={game}
+                            isMyTeam={true}
+                            onClick={game.status === 'finished' ? () => router.push(`/game/${game.id}`) : undefined}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {otherGames.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-gray-400">
+                        {myTeamGames.length > 0 ? '다른 경기' : '오늘의 경기'}
+                      </p>
+                      <div className="space-y-2">
+                        {otherGames.map((game) => (
+                          <GameCard
+                            key={game.id}
+                            game={game}
+                            isMyTeam={false}
+                            onClick={game.status === 'finished' ? () => router.push(`/game/${game.id}`) : undefined}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+          </div>
+        )}
       </div>
     </div>
   )
