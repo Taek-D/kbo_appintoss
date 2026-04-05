@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: "Phase 02 Plan 01 complete — CrawlerService + GameRepository TDD"
-last_updated: "2026-04-05T06:58:00.000Z"
+status: executing
+stopped_at: Phase 02 Plan 02 complete — QStash 폴링 API Route TDD + 설정 스크립트
+last_updated: "2026-04-05T07:13:13.182Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
   percent: 0
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 2
-Plan: 1 of 2 complete
-Status: In progress — Plan 01 complete, Plan 02 pending
+Plan: 2 of 2 complete
+Status: Ready to execute
 Last activity: 2026-04-05
 
 Progress: [░░░░░░░░░░] 0%
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 5min | 2 tasks | 8 files |
 | Phase 01 P03 | 6min | 3 tasks | 9 files |
 | Phase 02 P01 | 8min | 2 tasks | 10 files |
+| Phase 02-data-pipeline P02 | 8min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 01]: session_token httpOnly secure cookie에 accessToken 직접 저장 (MVP 단순화)
 - [Phase 01]: 토스 SDK는 window 글로벌 접근 래퍼로 구현 (npm 패키지 의존성 없이)
 - [Phase 01]: Route Group 패턴: (auth)/(main) 분리하여 인증 상태별 레이아웃 차별화
+- [Phase 02-data-pipeline]: [Phase 02-02]: QStash Receiver 모듈 레벨 싱글턴 초기화 — Vercel 서버리스 cold start 최적화
+- [Phase 02-data-pipeline]: [Phase 02-02]: 크롤링 실패 시 200 반환으로 QStash 자동 재시도 방지 (D-01)
+- [Phase 02-data-pipeline]: [Phase 02-02]: vi.hoisted()로 Receiver 생성자 모킹 — vitest 호이스팅 이슈 해결 패턴
 
 ### Pending Todos
 
@@ -90,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T06:58:00.000Z
-Stopped at: "Phase 02 Plan 01 complete — CrawlerService + GameRepository TDD"
-Resume file: .planning/phases/02-data-pipeline/02-02-PLAN.md
+Last session: 2026-04-05T07:13:13.178Z
+Stopped at: Phase 02 Plan 02 complete — QStash 폴링 API Route TDD + 설정 스크립트
+Resume file: None
