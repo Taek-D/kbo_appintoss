@@ -23,6 +23,11 @@ vi.mock('@/backend/modules/crawler', () => ({
   syncGames: vi.fn(),
 }))
 
+vi.mock('@/backend/modules/push', () => ({
+  sendGameEndNotifications: vi.fn().mockResolvedValue(undefined),
+  createPushProvider: vi.fn().mockReturnValue({ send: vi.fn() }),
+}))
+
 vi.mock('@/lib/logger', () => ({
   logger: {
     info: vi.fn(),
@@ -34,6 +39,7 @@ vi.mock('@/lib/logger', () => ({
 
 // 모킹된 모듈 import
 import { fetchTodayGames, syncGames } from '@/backend/modules/crawler'
+import { sendGameEndNotifications, createPushProvider } from '@/backend/modules/push'
 import { logger } from '@/lib/logger'
 import { POST } from '../route'
 
@@ -182,6 +188,59 @@ describe('POST /api/cron/poll', () => {
     expect(res.status).toBe(200)
     expect(logger.info).toHaveBeenCalledWith(
       expect.objectContaining({ transitionCount: 0 }),
+      expect.any(String)
+    )
+  })
+
+  it('Test 8: transitions가 있으면 sendGameEndNotifications가 호출된다', async () => {
+    ;(fetchTodayGames as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      games: mockGames,
+    })
+    ;(syncGames as ReturnType<typeof vi.fn>).mockResolvedValue(mockTransitions)
+
+    const req = createMockRequest({ signature: 'valid-signature', body: '' })
+    const res = await POST(req)
+
+    expect(res.status).toBe(200)
+    expect(createPushProvider).toHaveBeenCalledOnce()
+    expect(sendGameEndNotifications).toHaveBeenCalledOnce()
+    expect(sendGameEndNotifications).toHaveBeenCalledWith(
+      mockTransitions,
+      expect.objectContaining({ send: expect.any(Function) })
+    )
+  })
+
+  it('Test 9: transitions가 빈 배열이면 sendGameEndNotifications가 호출되지 않는다', async () => {
+    ;(fetchTodayGames as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      games: mockGames,
+    })
+    ;(syncGames as ReturnType<typeof vi.fn>).mockResolvedValue([])
+
+    const req = createMockRequest({ signature: 'valid-signature', body: '' })
+    const res = await POST(req)
+
+    expect(res.status).toBe(200)
+    expect(sendGameEndNotifications).not.toHaveBeenCalled()
+  })
+
+  it('Test 10: sendGameEndNotifications가 에러를 throw해도 200을 반환한다 (Push 실패가 폴링을 실패시키지 않음)', async () => {
+    ;(fetchTodayGames as ReturnType<typeof vi.fn>).mockResolvedValue({
+      success: true,
+      games: mockGames,
+    })
+    ;(syncGames as ReturnType<typeof vi.fn>).mockResolvedValue(mockTransitions)
+    ;(sendGameEndNotifications as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('Push service unavailable')
+    )
+
+    const req = createMockRequest({ signature: 'valid-signature', body: '' })
+    const res = await POST(req)
+
+    expect(res.status).toBe(200)
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({ err: expect.any(Error) }),
       expect.any(String)
     )
   })

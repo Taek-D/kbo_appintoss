@@ -1,5 +1,6 @@
 import { Receiver } from '@upstash/qstash'
 import { fetchTodayGames, syncGames } from '@/backend/modules/crawler'
+import { sendGameEndNotifications, createPushProvider } from '@/backend/modules/push'
 import { logger } from '@/lib/logger'
 
 const receiver = new Receiver({
@@ -45,23 +46,32 @@ export async function POST(req: Request): Promise<Response> {
   // 4. DB 동기화 + 상태 전이 감지 (DATA-02)
   const transitions = await syncGames(result.games)
 
-  // Phase 3 Handoff Contract:
-  // transitions(StateTransition[])는 Phase 3에서 Push 알림 트리거로 사용된다.
-  // Phase 3 구현 시 이 지점에서 transitions를 순회하며:
-  //   - toStatus === 'playing'  -> 경기 시작 알림 (is_notified_start 체크)
-  //   - toStatus === 'finished' -> 경기 종료 알림 (is_notified_finish 체크)
-  //   - toStatus === 'cancelled' -> 경기 취소 알림 (is_notified_cancel 체크)
-  // 각 전이에 대해 해당 팀 구독자를 조회하고 Push 발송 후 is_notified_* 플래그를 업데이트한다.
-  // transitions의 gameId(DB uuid)로 games 테이블에서 is_notified_* 상태를 조회/갱신한다.
+  // 5. Push 알림 발송 (PUSH-01, PUSH-03)
+  if (transitions.length > 0) {
+    try {
+      const pushProvider = createPushProvider()
+      await sendGameEndNotifications(transitions, pushProvider)
+      logger.info(
+        {
+          transitionCount: transitions.length,
+          transitions: transitions.map((t) => ({
+            from: t.fromStatus,
+            to: t.toStatus,
+            teams: `${t.game.homeTeam} vs ${t.game.awayTeam}`,
+          })),
+        },
+        'Push notifications sent'
+      )
+    } catch (error) {
+      // Push 발송 실패가 폴링 전체를 실패시키면 안 됨
+      logger.error({ err: error }, 'Push notification failed')
+    }
+  }
+
   logger.info(
     {
       gamesCount: result.games.length,
       transitionCount: transitions.length,
-      transitions: transitions.map((t) => ({
-        from: t.fromStatus,
-        to: t.toStatus,
-        teams: `${t.game.homeTeam} vs ${t.game.awayTeam}`,
-      })),
     },
     'Poll complete'
   )
