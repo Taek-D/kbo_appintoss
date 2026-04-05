@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-05T12:48:11.241Z"
+stopped_at: Completed 04-game-result-ui 04-01-PLAN.md
+last_updated: "2026-04-05T14:42:00.000Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 71
+  total_plans: 8
+  completed_plans: 8
+  percent: 87
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 4
-Plan: Not started
+Plan: 1 (Complete)
 Status: Executing
 Last activity: 2026-04-05
 
-Progress: [███████░░░] 71%
+Progress: [████████░░] 87%
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Progress: [███████░░░] 71%
 | Phase 02-data-pipeline P02 | 8min | 2 tasks | 4 files |
 | Phase 03-push-notification P01 | 15min | 1 tasks | 5 files |
 | Phase 03-push-notification P02 | 12min | 2 tasks | 5 files |
+| Phase 04-game-result-ui P01 | 15min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,10 @@ Recent decisions affecting current work:
 - [Phase 03-02]: 구독자 0명이어도 is_notified 플래그 업데이트 — 재폴링 시 중복 발송 방지
 - [Phase 03-02]: Promise.allSettled() 병렬 테스트에서 mockFrom.mockImplementation(table=>) 패턴 — mockReturnValueOnce 큐 순서 불보장 문제 해결
 - [Phase 03-02]: 템플릿 ID를 TOSS_TEMPLATE_ID_FINISHED/CANCELLED 환경변수로 관리 — 하드코딩 방지, 검수 전 mock값으로 동작
+- [Phase 04-01]: gsap default import (import gsap from 'gsap') — named { gsap } import는 vitest mock 해석 불일치 발생
+- [Phase 04-01]: vi.hoisted() 패턴으로 mock 변수 선언 — vi.mock 팩토리 호이스팅으로 인한 TDZ 에러 방지
+- [Phase 04-01]: Lenis per-page 초기화 (useEffect + destroy) — 결과 화면에만 적용, 다른 페이지 영향 없음
+- [Phase 04-01]: pnpm exec vitest --root <worktree> --config <worktree>/vitest.config.mts — worktree에 node_modules 없어 메인 레포 vitest 활용
 
 ### Pending Todos
 
@@ -103,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T12:48:11.237Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-game-result-ui/04-CONTEXT.md
+Last session: 2026-04-05T14:42:00.000Z
+Stopped at: Completed 04-game-result-ui 04-01-PLAN.md
+Resume file: .planning/phases/04-game-result-ui/04-01-SUMMARY.md

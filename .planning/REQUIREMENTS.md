@@ -31,10 +31,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### 경기 결과 UI
 
-- [ ] **UI-01**: 유저는 알림 클릭 시 경기 결과 요약 화면을 볼 수 있다
-- [ ] **UI-02**: 결과 화면에 최종 스코어와 이닝별 점수가 표시된다
-- [ ] **UI-03**: 결과 화면에 GSAP 기반 스코어 카운트업 애니메이션이 동작한다
-- [ ] **UI-04**: 페이지 전체에 Lenis 기반 부드러운 스크롤이 적용된다
+- [x] **UI-01**: 유저는 알림 클릭 시 경기 결과 요약 화면을 볼 수 있다
+- [x] **UI-02**: 결과 화면에 최종 스코어와 이닝별 점수가 표시된다
+- [x] **UI-03**: 결과 화면에 GSAP 기반 스코어 카운트업 애니메이션이 동작한다
+- [x] **UI-04**: 페이지 전체에 Lenis 기반 부드러운 스크롤이 적용된다
 - [ ] **UI-05**: 토스 디자인 스타일(화이트톤, 둥근 모서리)이 일관되게 적용된다
 
 ### 구독 관리
@@ -94,10 +94,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | PUSH-03 | Phase 3 | Complete |
 | PUSH-04 | Phase 3 | Complete |
 | PUSH-05 | Phase 3 | Complete |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
-| UI-03 | Phase 4 | Pending |
-| UI-04 | Phase 4 | Pending |
+| UI-01 | Phase 4 | Complete |
+| UI-02 | Phase 4 | Complete |
+| UI-03 | Phase 4 | Complete |
+| UI-04 | Phase 4 | Complete |
 | UI-05 | Phase 4 | Pending |
 
 **Coverage:**

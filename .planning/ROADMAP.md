@@ -80,7 +80,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — API Routes (games/today, games/[id]) + ScoreBoard/InningTable/GameCard 컴포넌트 TDD + /game/[id] 결과 페이지 (GSAP 카운트업 + Lenis 스크롤)
+- [x] 04-01-PLAN.md — API Routes (games/today, games/[id]) + ScoreBoard/InningTable/GameCard 컴포넌트 TDD + /game/[id] 결과 페이지 (GSAP 카운트업 + Lenis 스크롤)
 - [ ] 04-02-PLAN.md — 메인 화면 경기 데이터 연동 (GameCard + 응원팀 강조 + 네비게이션) + 토스 디자인 통합 시각 검증
 
 ## Progress
@@ -93,4 +93,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 0/3 | Planning complete | - |
 | 2. Data Pipeline | 2/2 | Complete   | 2026-04-05 |
 | 3. Push Notification | 1/2 | Executing | - |
-| 4. Game Result UI | 0/2 | Planning complete | - |
+| 4. Game Result UI | 1/2 | In Progress|  |
