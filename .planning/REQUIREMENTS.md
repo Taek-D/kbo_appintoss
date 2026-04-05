@@ -16,10 +16,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### 데이터 수집
 
-- [ ] **DATA-01**: 시스템은 kbo-game 패키지를 통해 당일 KBO 경기 데이터를 수집한다
-- [ ] **DATA-02**: 시스템은 경기 상태 전이(Playing → Finished)를 정확히 감지한다
+- [x] **DATA-01**: 시스템은 kbo-game 패키지를 통해 당일 KBO 경기 데이터를 수집한다
+- [x] **DATA-02**: 시스템은 경기 상태 전이(Playing → Finished)를 정확히 감지한다
 - [ ] **DATA-03**: 시스템은 8회 이후 폴링 주기를 30초로 단축하여 종료 시점을 빠르게 감지한다
-- [ ] **DATA-04**: 시스템은 크롤링 실패와 경기 없음을 구분하여 처리한다
+- [x] **DATA-04**: 시스템은 크롤링 실패와 경기 없음을 구분하여 처리한다
 
 ### 알림 발송
 
@@ -46,7 +46,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INFRA-01**: Supabase에 users, games, push_logs 테이블이 구성된다
 - [ ] **INFRA-02**: 토스 Push 메시지 템플릿이 검수를 통과한다
-- [ ] **INFRA-03**: 경기 상태는 DB에 영속화되어 서버 재시작에도 유지된다
+- [x] **INFRA-03**: 경기 상태는 DB에 영속화되어 서버 재시작에도 유지된다
 
 ## v2 Requirements
 
@@ -78,17 +78,17 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 2 | Pending |
+| INFRA-03 | Phase 2 | Complete |
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 1 | Complete |
 | SUB-01 | Phase 1 | Complete |
 | SUB-02 | Phase 1 | Complete |
-| DATA-01 | Phase 2 | Pending |
-| DATA-02 | Phase 2 | Pending |
+| DATA-01 | Phase 2 | Complete |
+| DATA-02 | Phase 2 | Complete |
 | DATA-03 | Deferred | Deferred to post-MVP (per CONTEXT.md D-08) |
-| DATA-04 | Phase 2 | Pending |
+| DATA-04 | Phase 2 | Complete |
 | PUSH-01 | Phase 3 | Pending |
 | PUSH-02 | Phase 3 | Pending |
 | PUSH-03 | Phase 3 | Pending |

@@ -48,7 +48,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — CrawlerService TDD (kbo-game 래핑, null/[] 분리) + GameRepository TDD (상태 전이 감지, Supabase upsert) + DB 마이그레이션
+- [x] 02-01-PLAN.md — CrawlerService TDD (kbo-game 래핑, null/[] 분리) + GameRepository TDD (상태 전이 감지, Supabase upsert) + DB 마이그레이션
 - [ ] 02-02-PLAN.md — QStash 폴링 API Route TDD (서명 검증, KST 시간 체크) + QStash Cron Schedule 설정 스크립트 + 환경변수 문서화
 
 ### Phase 3: Push Notification
@@ -91,6 +91,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/3 | Planning complete | - |
-| 2. Data Pipeline | 0/2 | Planning complete | - |
+| 2. Data Pipeline | 1/2 | In Progress|  |
 | 3. Push Notification | 0/2 | Not started | - |
 | 4. Game Result UI | 0/2 | Not started | - |
