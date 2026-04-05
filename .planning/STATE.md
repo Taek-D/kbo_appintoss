@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** 응원팀 경기가 끝나는 즉시 유저에게 결과를 알려주는 것 — 빠르고 정확한 경기 종료 알림
-**Current focus:** Phase 03 — push-notification
+**Current focus:** Phase 04 — game-result-ui (checkpoint: 시각 검증 대기)
 
 ## Current Position
 
