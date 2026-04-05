@@ -46,11 +46,11 @@ Plans:
   3. 8회 이후 폴링 주기가 30초로 자동 단축되어 종료 시점을 빠르게 감지한다
   4. 크롤링 실패(네트워크 오류)와 경기 없음(빈 배열)이 서로 다른 코드 경로로 처리된다
   5. 서버가 재시작되어도 경기 상태가 DB에서 복원되어 중복 알림이 발생하지 않는다
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: CrawlerService 인터페이스 + kbo-game 패키지 검증 및 래핑 (TDD — 패키지 불가 시 네이버 스포츠 크롤러로 대체)
-- [ ] 02-02: BullMQ 기반 가변 폴링 워커 + 상태 전이 감지 + DB 영속화 (TDD) + 퍼시스턴트 프로세스 배포 (Fly.io/Railway)
+- [ ] 02-01-PLAN.md — CrawlerService TDD (kbo-game 래핑, null/[] 분리) + GameRepository TDD (상태 전이 감지, Supabase upsert) + DB 마이그레이션
+- [ ] 02-02-PLAN.md — QStash 폴링 API Route TDD (서명 검증, KST 시간 체크) + QStash Cron Schedule 설정 스크립트 + 환경변수 문서화
 
 ### Phase 3: Push Notification
 **Goal**: 경기 종료가 감지되는 즉시 해당 팀 구독자 전원에게 토스 푸시 알림이 Rate Limit을 준수하며 발송된다
@@ -92,6 +92,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/3 | Planning complete | - |
-| 2. Data Pipeline | 0/2 | Not started | - |
+| 2. Data Pipeline | 0/2 | Planning complete | - |
 | 3. Push Notification | 0/2 | Not started | - |
 | 4. Game Result UI | 0/2 | Not started | - |
