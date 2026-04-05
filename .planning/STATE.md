@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 03-push-notification/03-01-PLAN.md"
-last_updated: "2026-04-05T11:03:00.000Z"
+stopped_at: "Completed 03-push-notification/03-02-PLAN.md"
+last_updated: "2026-04-05T11:20:28.000Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 60
+  completed_plans: 7
+  percent: 71
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 03 (push-notification) — EXECUTING
-Plan: 01 complete, 02 next
+Plan: 02 complete
 Status: Executing
 Last activity: 2026-04-05
 
-Progress: [██████░░░░] 60%
+Progress: [███████░░░] 71%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████░░░░] 60%
 | Phase 02 P01 | 8min | 2 tasks | 10 files |
 | Phase 02-data-pipeline P02 | 8min | 2 tasks | 4 files |
 | Phase 03-push-notification P01 | 15min | 1 tasks | 5 files |
+| Phase 03-push-notification P02 | 12min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 03-01]: createServiceRoleClient() 추가 — QStash webhook(poll/route.ts)은 cookies() 없어 createServerSupabaseClient() 사용 불가
 - [Phase 03-01]: vitest 생성자 모킹 패턴 확립 — mockImplementation(function(this){Object.assign(this, instance)}) 사용
 - [Phase 03-01]: TOSS_PUSH_API_URL 환경변수로 관리 — 하드코딩 방지, 테스트 오버라이드 가능
+- [Phase 03-02]: 구독자 0명이어도 is_notified 플래그 업데이트 — 재폴링 시 중복 발송 방지
+- [Phase 03-02]: Promise.allSettled() 병렬 테스트에서 mockFrom.mockImplementation(table=>) 패턴 — mockReturnValueOnce 큐 순서 불보장 문제 해결
+- [Phase 03-02]: 템플릿 ID를 TOSS_TEMPLATE_ID_FINISHED/CANCELLED 환경변수로 관리 — 하드코딩 방지, 검수 전 mock값으로 동작
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T11:03:00.000Z
-Stopped at: Completed 03-push-notification/03-01-PLAN.md
-Resume file: .planning/phases/03-push-notification/03-01-SUMMARY.md
+Last session: 2026-04-05T11:20:28.000Z
+Stopped at: Completed 03-push-notification/03-02-PLAN.md
+Resume file: .planning/phases/03-push-notification/03-02-SUMMARY.md

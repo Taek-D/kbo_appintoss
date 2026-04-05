@@ -65,7 +65,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Push 타입 정의 + Service Role 클라이언트 + PushProvider mTLS TDD (인증서 검증, API 통신, 에러 핸들링)
-- [ ] 03-02-PLAN.md — NotificationService TDD (구독자 조회, 순차 발송, push_logs, Promise.allSettled) + poll/route.ts 통합
+- [x] 03-02-PLAN.md — NotificationService TDD (구독자 조회, 순차 발송, push_logs, Promise.allSettled) + poll/route.ts 통합
 
 ### Phase 4: Game Result UI
 **Goal**: 유저가 알림을 탭하면 인터랙티브한 경기 결과 화면이 표시되고, 응원팀에 오늘 경기가 없으면 적절한 안내 화면이 나타나며, 서비스 전체가 통합 완성된다
