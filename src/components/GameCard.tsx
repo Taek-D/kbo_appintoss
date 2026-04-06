@@ -28,14 +28,22 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
 
   const isClickable = game.status === 'finished' && typeof onClick === 'function'
 
+  const scoreLabel =
+    game.status === 'scheduled'
+      ? `${awayName} 대 ${homeName}, 시간 미정`
+      : game.status === 'cancelled'
+        ? `${awayName} 대 ${homeName}, 취소`
+        : `${awayName} ${game.away_score} 대 ${game.home_score} ${homeName}`
+
   return (
     <button
       type="button"
       onClick={isClickable ? onClick : undefined}
+      aria-label={scoreLabel}
       className={[
         'w-full rounded-xl bg-white p-4 text-left shadow-sm transition-colors',
-        isMyTeam ? 'border-l-4 border-[#0064FF]' : '',
-        isClickable ? 'cursor-pointer active:bg-gray-50' : 'cursor-default',
+        isMyTeam ? 'border-l-4 border-[--accent]' : '',
+        isClickable ? 'cursor-pointer hover:bg-gray-50 active:bg-gray-100' : 'cursor-default',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -62,8 +70,8 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
         {/* Away 팀 */}
         <div className="flex flex-1 flex-col items-start">
           <span
-            className={`text-sm font-medium ${
-              awayWin ? 'font-bold text-gray-900' : 'text-gray-600'
+            className={`text-sm ${
+              awayWin ? 'font-bold text-gray-900' : 'font-medium text-gray-600'
             }`}
           >
             {awayName}
@@ -80,7 +88,7 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
             <>
               <span
                 className={`text-xl font-bold tabular-nums ${
-                  awayWin ? 'text-[#0064FF]' : homeWin ? 'text-gray-400' : 'text-gray-900'
+                  awayWin ? 'text-[--accent]' : homeWin ? 'text-gray-400' : 'text-gray-900'
                 }`}
               >
                 {game.away_score}
@@ -88,7 +96,7 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
               <span className="text-gray-300">:</span>
               <span
                 className={`text-xl font-bold tabular-nums ${
-                  homeWin ? 'text-[#0064FF]' : awayWin ? 'text-gray-400' : 'text-gray-900'
+                  homeWin ? 'text-[--accent]' : awayWin ? 'text-gray-400' : 'text-gray-900'
                 }`}
               >
                 {game.home_score}
@@ -100,8 +108,8 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
         {/* Home 팀 */}
         <div className="flex flex-1 flex-col items-end">
           <span
-            className={`text-sm font-medium ${
-              homeWin ? 'font-bold text-gray-900' : 'text-gray-600'
+            className={`text-sm ${
+              homeWin ? 'font-bold text-gray-900' : 'font-medium text-gray-600'
             }`}
           >
             {homeName}

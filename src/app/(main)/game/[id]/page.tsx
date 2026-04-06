@@ -73,8 +73,11 @@ export default function GameResultPage() {
     fetchUserTeam()
   }, [])
 
-  // Lenis smooth scroll 초기화 (결과 화면에만 — per D-05)
+  // Lenis smooth scroll 초기화 (결과 화면에만 — per D-05, M4: reduced-motion 지원)
   useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) return
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -89,7 +92,7 @@ export default function GameResultPage() {
   // 로딩 상태: 스켈레톤 UI (기존 page.tsx 패턴과 동일)
   if (isLoading) {
     return (
-      <div className="min-h-dvh bg-gray-50 pb-8">
+      <div className="min-h-dvh bg-white pb-8">
         {/* 네비게이션 스켈레톤 */}
         <div className="sticky top-0 z-10 flex items-center bg-white px-4 py-3 shadow-sm">
           <div className="h-8 w-8 animate-pulse rounded-full bg-gray-100" />
@@ -116,7 +119,7 @@ export default function GameResultPage() {
   if (!game) return null
 
   return (
-    <div className="min-h-dvh bg-gray-50 pb-8">
+    <div className="min-h-dvh bg-white pb-8">
       {/* 상단 네비게이션 바 */}
       <div className="sticky top-0 z-10 flex items-center bg-white px-4 py-3 shadow-sm">
         <button

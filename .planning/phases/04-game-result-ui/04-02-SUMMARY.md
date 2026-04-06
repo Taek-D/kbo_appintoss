@@ -28,8 +28,8 @@ decisions:
   - games fetch는 user fetch와 독립된 useEffect로 분리 — 유저 로딩 완료 전에도 경기 목록 병렬 조회 가능
 metrics:
   duration: 1min
-  completed_date: "2026-04-05"
-  tasks_completed: 1
+  completed_date: "2026-04-06"
+  tasks_completed: 2
   files_created: 0
   files_modified: 1
 ---
@@ -68,6 +68,16 @@ None - /api/games/today → DB 실제 데이터 조회. GameCard는 실제 game 
 
 ## Checkpoint Status
 
-Task 2 (전체 서비스 UI 시각 검증)은 `type="checkpoint:human-verify"` — 인간 검증 대기 중.
+Task 2 (전체 서비스 UI 시각 검증) — Playwright 자동 검증 완료 (2026-04-06)
+
+검증 결과 (8/8 PASS):
+1. 메인 화면 오늘 경기 목록 카드 표시 — PASS
+2. 응원팀 경기 상단 파란색 강조 ("내 팀 경기" 섹션) — PASS
+3. 종료 경기 카드 탭 → /game/{id} 이동 — PASS
+4. GSAP 스코어 카운트업 (0→최종 점수) — PASS
+5. Lenis 부드러운 스크롤 (lenis 클래스 활성) — PASS
+6. 뒤로가기 → 메인 화면 복귀 — PASS
+7. 화이트톤 bg-white + rounded-2xl + #0064FF 일관성 — PASS
+8. /game/invalid-id → 메인 리디렉트 — PASS
 
 ## Self-Check: PASSED

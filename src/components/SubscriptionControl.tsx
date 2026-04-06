@@ -81,7 +81,9 @@ export function SubscriptionControl({ user, onUnsubscribe }: SubscriptionControl
       <button
         type="button"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 shadow-sm transition-colors active:bg-gray-50"
+        aria-expanded={isMenuOpen}
+        aria-haspopup="menu"
+        className="flex w-full items-center gap-3 rounded-2xl bg-white p-4 shadow-sm transition-colors hover:bg-gray-50 active:bg-gray-50"
       >
         <div className="flex h-10 w-10 items-center justify-center">
           {imgError ? (
@@ -103,7 +105,7 @@ export function SubscriptionControl({ user, onUnsubscribe }: SubscriptionControl
           <p className="text-base font-semibold text-gray-900">{team.name}</p>
         </div>
         {user.subscribed && (
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-[#0064FF]">
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-[--accent]">
             알림 받는 중
           </span>
         )}
@@ -120,9 +122,15 @@ export function SubscriptionControl({ user, onUnsubscribe }: SubscriptionControl
 
       {/* 드롭다운 메뉴 */}
       {isMenuOpen && (
-        <div className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-xl bg-white shadow-lg">
+        <div
+          role="menu"
+          aria-label="구독 관리 메뉴"
+          className="absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-xl bg-white shadow-lg"
+          style={{ animation: 'menuSlideIn 150ms ease-out' }}
+        >
           <button
             type="button"
+            role="menuitem"
             onClick={handleTeamChange}
             className="flex w-full items-center gap-2 px-4 py-3 text-sm text-gray-700 transition-colors hover:bg-gray-50 active:bg-gray-100"
           >
@@ -134,6 +142,7 @@ export function SubscriptionControl({ user, onUnsubscribe }: SubscriptionControl
           <div className="mx-4 border-t border-gray-100" />
           <button
             type="button"
+            role="menuitem"
             onClick={handleUnsubscribeClick}
             className="flex w-full items-center gap-2 px-4 py-3 text-sm text-red-500 transition-colors hover:bg-red-50 active:bg-red-100"
           >

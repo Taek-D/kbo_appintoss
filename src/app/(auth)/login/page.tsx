@@ -56,7 +56,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-white px-5">
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-4">
+        {/* 야구공 아이콘 */}
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[--accent-light]">
+          <svg className="h-10 w-10 text-[--accent]" fill="none" viewBox="0 0 48 48" stroke="currentColor" strokeWidth={1.5}>
+            <circle cx="24" cy="24" r="20" />
+            <path d="M16 8c2 4 2 8 0 12s-2 8 0 12" strokeLinecap="round" />
+            <path d="M32 8c-2 4-2 8 0 12s2 8 0 12" strokeLinecap="round" />
+          </svg>
+        </div>
         <h1 className="text-2xl font-bold text-gray-900">KBO 야구 알리미</h1>
         <p className="text-sm text-gray-500">
           응원팀 경기 결과를 바로 알려드려요
@@ -68,7 +76,7 @@ export default function LoginPage() {
           type="button"
           onClick={handleLogin}
           disabled={isLoading}
-          className="w-full rounded-xl bg-[#0064FF] py-3.5 text-base font-semibold text-white transition-colors disabled:opacity-50 active:bg-[#0050CC]"
+          className="w-full rounded-xl bg-[--accent] py-3.5 text-base font-semibold text-white transition-colors hover:bg-[--accent-hover] disabled:opacity-50 active:bg-[--accent-hover]"
         >
           {isLoading ? '로그인 중...' : '토스로 시작하기'}
         </button>

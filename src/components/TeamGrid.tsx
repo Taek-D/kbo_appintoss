@@ -30,8 +30,8 @@ export function TeamGrid({ onSelect, selectedCode }: TeamGridProps) {
             onClick={() => onSelect(team.code)}
             className={`flex flex-col items-center gap-2 rounded-xl p-3 shadow-sm transition-all active:scale-95 ${
               isSelected
-                ? 'border-2 border-[#0064FF] bg-blue-50'
-                : 'border border-gray-100 bg-white hover:bg-gray-50'
+                ? 'border-2 border-[--accent] bg-[--accent-light]'
+                : 'border border-gray-100 bg-white hover:bg-gray-50 hover:scale-[1.02]'
             }`}
           >
             <div className="relative flex h-12 w-12 items-center justify-center">
@@ -52,7 +52,7 @@ export function TeamGrid({ onSelect, selectedCode }: TeamGridProps) {
             </div>
             <span
               className={`text-xs font-medium ${
-                isSelected ? 'text-[#0064FF]' : 'text-gray-700'
+                isSelected ? 'text-[--accent]' : 'text-gray-700'
               }`}
             >
               {team.name}

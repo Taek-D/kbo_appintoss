@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation** - DB 스키마 + 토스 인증 + 온보딩 UI + 템플릿 검수 신청
 - [x] **Phase 2: Data Pipeline** - KBO 크롤러 + 폴링 워커 (TDD) (completed 2026-04-05)
 - [ ] **Phase 3: Push Notification** - 토스 Push API mTLS + 순차 발송 큐 (TDD)
-- [ ] **Phase 4: Game Result UI** - GSAP/Lenis 인터랙티브 경기 결과 화면 + 통합 완성
+- [x] **Phase 4: Game Result UI** - GSAP/Lenis 인터랙티브 경기 결과 화면 + 통합 완성 (completed 2026-04-06)
 
 ## Phase Details
 
@@ -81,7 +81,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — API Routes (games/today, games/[id]) + ScoreBoard/InningTable/GameCard 컴포넌트 TDD + /game/[id] 결과 페이지 (GSAP 카운트업 + Lenis 스크롤)
-- [ ] 04-02-PLAN.md — 메인 화면 경기 데이터 연동 (GameCard + 응원팀 강조 + 네비게이션) + 토스 디자인 통합 시각 검증
+- [x] 04-02-PLAN.md — 메인 화면 경기 데이터 연동 (GameCard + 응원팀 강조 + 네비게이션) + 토스 디자인 통합 시각 검증
 
 ## Progress
 
@@ -93,4 +93,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation | 0/3 | Planning complete | - |
 | 2. Data Pipeline | 2/2 | Complete   | 2026-04-05 |
 | 3. Push Notification | 1/2 | Executing | - |
-| 4. Game Result UI | 1/2 | In Progress|  |
+| 4. Game Result UI | 2/2 | Complete   | 2026-04-06 |

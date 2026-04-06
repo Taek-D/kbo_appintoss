@@ -56,7 +56,7 @@ describe('ScoreBoard', () => {
     expect(screen.getByText('KT 위즈')).toBeInTheDocument()
   })
 
-  it('Test 3: 승리팀(home)에 text-[#0064FF] 클래스 적용', () => {
+  it('Test 3: 승리팀(home)에 text-[--accent] 클래스 적용', () => {
     const { container } = render(
       <ScoreBoard
         homeTeam="LG"
@@ -65,9 +65,9 @@ describe('ScoreBoard', () => {
         awayScore={3}
       />
     )
-    // home 승리 시 home 스코어 텍스트에 파란색 클래스
-    const blueEl = container.querySelector('.text-\\[\\#0064FF\\]')
-    expect(blueEl).toBeInTheDocument()
+    // home 승리 시 home 스코어 텍스트에 accent 클래스
+    const accentEl = container.querySelector('.text-\\[--accent\\]')
+    expect(accentEl).toBeInTheDocument()
   })
 
   it('Test 4: gsap.from이 textContent:0 + snap:{textContent:1} 인자로 호출됨', () => {
