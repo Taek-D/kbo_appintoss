@@ -12,11 +12,12 @@ export async function GET(request: NextRequest) {
 
     // TODO: 토스 인증 연동 후 제거 — 임시 게스트 모드
     if (!sessionToken) {
+      const guestTeam = request.cookies.get('guest_team')?.value ?? null
       return NextResponse.json({
         user: {
           id: 'guest',
-          team_code: 'KIA',
-          subscribed: true,
+          team_code: guestTeam,
+          subscribed: guestTeam !== null,
         },
       })
     }

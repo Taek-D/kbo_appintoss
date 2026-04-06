@@ -21,8 +21,9 @@ const UpdateTeamRequestSchema = z.object({
 async function extractUserId(request: NextRequest): Promise<string | null> {
   const sessionToken = request.cookies.get('session_token')?.value
 
+  // TODO: 토스 인증 연동 후 제거 — 임시 게스트 모드
   if (!sessionToken) {
-    return null
+    return 'guest'
   }
 
   try {
@@ -56,6 +57,16 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    // TODO: 토스 인증 연동 후 제거 — 게스트는 쿠키에 팀 저장
+    if (userId === 'guest') {
+      const res = NextResponse.json({
+        success: true,
+        user: { id: 'guest', team_code: parsed.data.team_code, subscribed: true },
+      })
+      res.cookies.set('guest_team', parsed.data.team_code, { path: '/', maxAge: 60 * 60 * 24 * 30 })
+      return res
+    }
+
     const user = await updateTeamCode(userId, parsed.data.team_code)
 
     return NextResponse.json({
@@ -79,6 +90,13 @@ export async function DELETE(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // TODO: 토스 인증 연동 후 제거 — 게스트는 쿠키 삭제
+    if (userId === 'guest') {
+      const res = NextResponse.json({ success: true })
+      res.cookies.delete('guest_team')
+      return res
     }
 
     await updateSubscription(userId, false)

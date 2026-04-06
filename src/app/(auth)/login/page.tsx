@@ -19,6 +19,18 @@ export default function LoginPage() {
     setErrorMessage(null)
 
     try {
+      // TODO: 토스 인증 연동 후 제거 — 게스트 모드: auth/me로 상태 확인 후 이동
+      const meRes = await fetch('/api/auth/me')
+      if (meRes.ok) {
+        const meData = await meRes.json() as { user: { team_code: string | null } }
+        if (meData.user.team_code) {
+          router.push('/')
+        } else {
+          router.push('/team-select')
+        }
+        return
+      }
+
       // callAppLogin: 개발 환경 mock / 프로덕션 토스 SDK 분기 처리
       const { authorizationCode, referrer } = await callAppLogin()
 
