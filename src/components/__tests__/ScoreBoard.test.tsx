@@ -66,7 +66,7 @@ describe('ScoreBoard', () => {
       />
     )
     // home 승리 시 home 스코어 텍스트에 accent 클래스
-    const accentEl = container.querySelector('.text-\\[--accent\\]')
+    const accentEl = container.querySelector('.text-accent')
     expect(accentEl).toBeInTheDocument()
   })
 

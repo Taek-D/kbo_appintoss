@@ -99,7 +99,7 @@ export default function MainPage() {
         <button
           type="button"
           onClick={fetchUser}
-          className="mt-4 rounded-xl bg-[--accent] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[--accent-hover] active:bg-[--accent-hover]"
+          className="mt-4 rounded-xl bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover active:bg-accent-hover"
         >
           다시 시도
         </button>
@@ -127,7 +127,7 @@ export default function MainPage() {
             <button
               type="button"
               onClick={() => router.push(`/team-select?current=${user.team_code}`)}
-              className="font-medium text-[--accent]"
+              className="font-medium text-accent"
             >
               다시 켜기
             </button>
@@ -143,7 +143,7 @@ export default function MainPage() {
             <button
               type="button"
               onClick={() => router.push('/team-select')}
-              className="font-medium text-[--accent]"
+              className="font-medium text-accent"
             >
               선택하기
             </button>
@@ -191,7 +191,7 @@ export default function MainPage() {
                 <>
                   {myTeamGames.length > 0 && (
                     <div>
-                      <p className="mb-2 text-xs font-medium text-[--accent]">내 팀 경기</p>
+                      <p className="mb-2 text-xs font-medium text-accent">내 팀 경기</p>
                       <div className="space-y-2">
                         {myTeamGames.map((game) => (
                           <GameCard

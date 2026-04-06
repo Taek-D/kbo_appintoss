@@ -63,7 +63,7 @@ export function ScoreBoard({
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
       {/* 승리 축하 배너 */}
       {isUserWin && (
-        <div className="bg-gradient-to-r from-[--accent] to-[--accent-hover] px-4 py-2 text-center">
+        <div className="bg-gradient-to-r from-accent to-accent-hover px-4 py-2 text-center">
           <span className="text-sm font-semibold text-white">승리!</span>
         </div>
       )}
@@ -96,7 +96,7 @@ export function ScoreBoard({
             ref={awayRef}
             className={`text-5xl font-bold tabular-nums ${
               awayWin
-                ? 'text-[--accent]'
+                ? 'text-accent'
                 : homeWin
                   ? 'text-gray-400'
                   : 'text-gray-900'
@@ -109,7 +109,7 @@ export function ScoreBoard({
             ref={homeRef}
             className={`text-5xl font-bold tabular-nums ${
               homeWin
-                ? 'text-[--accent]'
+                ? 'text-accent'
                 : awayWin
                   ? 'text-gray-400'
                   : 'text-gray-900'

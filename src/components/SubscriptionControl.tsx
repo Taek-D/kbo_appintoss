@@ -105,7 +105,7 @@ export function SubscriptionControl({ user, onUnsubscribe }: SubscriptionControl
           <p className="text-base font-semibold text-gray-900">{team.name}</p>
         </div>
         {user.subscribed && (
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-[--accent]">
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-accent">
             알림 받는 중
           </span>
         )}

@@ -42,7 +42,7 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
       aria-label={scoreLabel}
       className={[
         'w-full rounded-xl bg-white p-4 text-left shadow-sm transition-colors',
-        isMyTeam ? 'border-l-4 border-[--accent]' : '',
+        isMyTeam ? 'border-l-4 border-accent' : '',
         isClickable ? 'cursor-pointer hover:bg-gray-50 active:bg-gray-100' : 'cursor-default',
       ]
         .filter(Boolean)
@@ -88,7 +88,7 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
             <>
               <span
                 className={`text-xl font-bold tabular-nums ${
-                  awayWin ? 'text-[--accent]' : homeWin ? 'text-gray-400' : 'text-gray-900'
+                  awayWin ? 'text-accent' : homeWin ? 'text-gray-400' : 'text-gray-900'
                 }`}
               >
                 {game.away_score}
@@ -96,7 +96,7 @@ export function GameCard({ game, isMyTeam, onClick }: GameCardProps) {
               <span className="text-gray-300">:</span>
               <span
                 className={`text-xl font-bold tabular-nums ${
-                  homeWin ? 'text-[--accent]' : awayWin ? 'text-gray-400' : 'text-gray-900'
+                  homeWin ? 'text-accent' : awayWin ? 'text-gray-400' : 'text-gray-900'
                 }`}
               >
                 {game.home_score}
