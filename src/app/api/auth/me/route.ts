@@ -10,8 +10,15 @@ export async function GET(request: NextRequest) {
   try {
     const sessionToken = request.cookies.get('session_token')?.value
 
+    // TODO: 토스 인증 연동 후 제거 — 임시 게스트 모드
     if (!sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({
+        user: {
+          id: 'guest',
+          team_code: 'KIA',
+          subscribed: true,
+        },
+      })
     }
 
     // accessToken으로 토스 userKey 조회
