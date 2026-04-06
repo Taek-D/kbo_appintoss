@@ -38,7 +38,7 @@ export function InningTable({ innings, homeTeam, awayTeam }: InningTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-max text-sm">
+        <table className="w-full min-w-[360px] text-sm">
           <thead>
             <tr className="bg-gray-50">
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">팀</th>

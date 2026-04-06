@@ -80,9 +80,23 @@ export default function TeamSelectPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-white px-5 pt-12 pb-8">
       <div className="mb-8">
-        <h1 className="text-xl font-bold text-gray-900">
-          응원팀을 선택해주세요
-        </h1>
+        <div className="flex items-center gap-3">
+          {currentTeamCode && (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="뒤로가기"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-colors active:bg-gray-100"
+            >
+              <svg className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+          )}
+          <h1 className="text-xl font-bold text-gray-900">
+            응원팀을 선택해주세요
+          </h1>
+        </div>
         {currentTeamCode && (
           <p className="mt-1 text-sm text-gray-500">
             현재 응원팀을 변경할 수 있어요
@@ -104,6 +118,7 @@ export default function TeamSelectPage() {
         title="응원팀 선택"
         message={`${selectedTeamName}을 응원할까요?`}
         confirmText={isSaving ? '저장 중...' : '응원하기'}
+        confirmDisabled={isSaving}
         cancelText="취소"
         onConfirm={handleConfirm}
         onCancel={handleCancel}

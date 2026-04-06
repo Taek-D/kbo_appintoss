@@ -8,6 +8,7 @@ type ConfirmModalProps = {
   message: string
   confirmText?: string
   cancelText?: string
+  confirmDisabled?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -18,6 +19,7 @@ export function ConfirmModal({
   message,
   confirmText = '확인',
   cancelText = '취소',
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -115,7 +117,8 @@ export function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover active:bg-accent-hover"
+            disabled={confirmDisabled}
+            className="flex-1 rounded-xl bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover active:bg-accent-hover disabled:opacity-50"
           >
             {confirmText}
           </button>

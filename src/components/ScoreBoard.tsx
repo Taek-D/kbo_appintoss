@@ -59,8 +59,10 @@ export function ScoreBoard({
     })
   })
 
+  const scoreLabel = `${awayInfo?.name ?? awayTeam} ${awayScore} 대 ${homeInfo?.name ?? homeTeam} ${homeScore}`
+
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm" role="region" aria-label={scoreLabel}>
       {/* 승리 축하 배너 */}
       {isUserWin && (
         <div className="bg-gradient-to-r from-accent to-accent-hover px-4 py-2 text-center">

@@ -145,7 +145,7 @@ export default function GameResultPage() {
       </div>
 
       {/* 스코어보드 카드 */}
-      <div className="px-5 pt-6">
+      <div className="px-5 pt-6" style={{ animation: 'fadeSlideUp 400ms ease-out' }}>
         <ScoreBoard
           homeTeam={game.home_team}
           awayTeam={game.away_team}
@@ -156,7 +156,7 @@ export default function GameResultPage() {
       </div>
 
       {/* 이닝 테이블 카드 */}
-      <div className="mt-4 px-5">
+      <div className="mt-4 px-5" style={{ animation: 'fadeSlideUp 400ms ease-out 150ms both' }}>
         <InningTable
           innings={parseInningData(game.inning_data)}
           homeTeam={game.home_team}
@@ -165,11 +165,11 @@ export default function GameResultPage() {
       </div>
 
       {/* 경기 정보 */}
-      <div className="mt-4 px-5">
+      <div className="mt-4 px-5" style={{ animation: 'fadeSlideUp 400ms ease-out 300ms both' }}>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
-          <p className="text-xs text-gray-400">{game.game_date} 경기</p>
+          <p className="text-sm font-medium text-gray-500">{game.game_date} 경기</p>
           {game.finished_at && (
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-sm text-gray-400">
               종료:{' '}
               {new Date(game.finished_at).toLocaleTimeString('ko-KR', {
                 hour: '2-digit',

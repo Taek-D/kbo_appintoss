@@ -78,7 +78,7 @@ export default function LoginPage() {
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-gray-900">KBO 야구 알리미</h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm leading-relaxed text-gray-500">
           응원팀 경기 결과를 바로 알려드려요
         </p>
       </div>
@@ -90,7 +90,15 @@ export default function LoginPage() {
           disabled={isLoading}
           className="w-full rounded-xl bg-accent py-3.5 text-base font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50 active:bg-accent-hover"
         >
-          {isLoading ? '로그인 중...' : '토스로 시작하기'}
+          {isLoading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              로그인 중...
+            </span>
+          ) : '토스로 시작하기'}
         </button>
 
         {errorMessage && (

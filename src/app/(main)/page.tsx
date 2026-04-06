@@ -152,7 +152,8 @@ export default function MainPage() {
       )}
 
       {/* 하단: 오늘 경기 정보 */}
-      <div className="mt-6">
+      <div className="mt-8">
+        <h2 className="mb-4 text-lg font-bold text-gray-900">오늘의 KBO</h2>
         {isGamesLoading ? (
           /* 경기 목록 스켈레톤 */
           <div className="animate-pulse space-y-3">

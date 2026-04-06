@@ -31,6 +31,24 @@ body {
   border-radius: 4px;
 }
 
+/* P2-7: 카드 진입 애니메이션 */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* P3-5: safe-area-inset */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* M2: 모달 진입 애니메이션 */
 @keyframes modalBackdropIn {
   from { background-color: rgba(0, 0, 0, 0); }
