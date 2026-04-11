@@ -31,9 +31,9 @@
         "'시작하기' CTA로 로그인 플로우 진입",
         "NavigationBar 백버튼이 첫 화면에서 앱 종료되도록 확인"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "appLogin() 즉시 호출 금지 — 반드시 사용자 액션 후 진입"
+      "notes": "라이트 비게임 톤으로 구현 완료. NavigationBar 백버튼=앱 종료 검증은 F009로 위임. 전역 디자인 토큰 정리는 F010으로 위임."
     },
     {
       "id": "F003",

@@ -25,6 +25,27 @@
 - claude-progress.txt 생성 (본 파일)
 - 다음 작업: F002 (인트로/랜딩 화면) — App.tsx 루트 라우트 교체 및 Intro 스켈레톤 구현
 
+### Session 2 — 2026-04-11 (F001 commit + F002 구현)
+- 루트 .gitignore에 /miniapp/.bkit/ 추가 (runtime-mutable state 제외)
+- 초기화 커밋 생성 (5b61f3a): scaffold + F001 반려방지 세팅 원콤
+  - Intro 스켈레톤 + App.tsx 라우팅은 여기 포함 (F002 출발선)
+- F002 본 구현: src/pages/Intro.tsx 재작성
+  - 템플릿의 게이밍 다크 톤 → 비게임 라이트 톤으로 오버라이드 (인라인)
+  - 브랜드 컬러 #3182F6 (토스 블루) + 한글 친화 폰트 스택
+  - ⚾ 이모지 원형 로고 + h1/슬로건 + 하단 "시작하기" CTA
+  - handleStart은 현재 navigate("/home")만 — 실제 appLogin은 F003에서
+  - TODO 주석으로 F003, F009 위임 지점 명시
+- 검증 메모:
+  - miniapp/node_modules 아직 미설치 → tsc/vitest는 다음 세션에서
+  - Intro.tsx는 기존 react-router-dom import만 유지하여 새 의존성 없음
+- 다음 작업: F003 (토스 로그인 appLogin) — with-app-login 예제 참조,
+  dynamic import + isSupported 체크 + unlink 콜백 + 서버 JWT 교환
+
+## 위임된 이슈 (future features가 인계받음)
+- NavigationBar 백버튼=첫 화면 앱종료 검증 → F009
+- 글로벌 디자인 토큰 TDS 규격 정리 (index.css 재정의) → F010
+- Pretendard/Noto Sans KR 한글 웹폰트 통일 → F010
+
 ## 결정 사항
 - navigationBar 설정: granite.config.ts의 필드가 아니라 런타임 NavigationBar 컴포넌트로 처리 (with-navigation-bar 예제 기준)
 - API 통신: VITE_API_BASE_URL 환경변수 기반 fetch (F008에서 구현)
