@@ -63,6 +63,26 @@
   - 실제 SDK 동작 검증은 토스 런타임 환경 또는 F008에서 CORS 설정 후 가능
 - 다음 작업: F004 (응원팀 선택 화면) — TeamSelect 페이지, 10구단 리스트, teamCode 저장 API
 
+### Session 3.5 — 2026-04-11 (설치 + 검증)
+- 발견: 루트 pnpm-workspace.yaml 때문에 `pnpm install`이 miniapp을 workspace 컨텍스트로
+  잡아 442ms만에 아무것도 설치하지 않고 exit 0으로 종료.
+- 해결: `pnpm install --ignore-workspace`로 강제 독립 설치 → 30s, 1549 패키지 설치 완료.
+- 검증 결과 (F001/F002/F003):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (전부 템플릿 기본 코드 — 내 파일 경고 0)
+  - pnpm test: 1 passed (템플릿 example test)
+- 남은 warning:
+  - src/components/ui/* 7건: react-refresh/only-export-components (shadcn 관행)
+  - apps-in-toss-examples-robin/** 1건: react-hooks/exhaustive-deps (참조 예제)
+  → eslint.config.js ignores에 robin 디렉토리 추가는 F012로 위임
+
+### 개발 명령어 (검증됨)
+- 설치: `cd miniapp && pnpm install --ignore-workspace`
+- 타입체크: `pnpm exec tsc -p tsconfig.app.json --noEmit`
+- lint: `pnpm lint`
+- test: `pnpm test`
+- dev: `pnpm dev` (아직 실행 안 함 — F008에서 CORS 설정 후)
+
 ## 위임된 이슈 (future features가 인계받음)
 - NavigationBar 백버튼=첫 화면 앱종료 검증 → F009
 - 글로벌 디자인 토큰 TDS 규격 정리 (index.css 재정의) → F010
