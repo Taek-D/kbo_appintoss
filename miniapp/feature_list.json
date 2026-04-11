@@ -46,9 +46,9 @@
         "서버와 JWT 교환 (kbo_game Next.js API)",
         "재로그인 플로우"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": "with-app-login",
-      "notes": "OAuth 토큰은 서버에서만, 클라이언트에는 앱 자체 JWT"
+      "notes": "클라이언트 레이어 완결. 서버 CORS/E2E 검증은 F008로 위임. unlink 콜백은 구조만 마련 (SDK 공식 이벤트 API 확정 후 F003-followup에서 내부 로직 교체). 서버 session_token=토스 accessToken 리팩토링은 btw 이슈로 기록."
     },
     {
       "id": "F004",

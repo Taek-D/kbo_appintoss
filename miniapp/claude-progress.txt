@@ -41,10 +41,42 @@
 - 다음 작업: F003 (토스 로그인 appLogin) — with-app-login 예제 참조,
   dynamic import + isSupported 체크 + unlink 콜백 + 서버 JWT 교환
 
+### Session 3 — 2026-04-11 (F003 구현)
+- 조사: 상위 kbo_game에 /api/auth/login, /api/auth/me 엔드포인트 이미 완비
+  - POST /api/auth/login: { authorizationCode, referrer } → { user } + Set-Cookie session_token
+  - GET /api/auth/me: session cookie → { user } (없으면 guest fallback)
+  - 서버 측 CORS middleware 없음 → F008로 위임
+- 조사: robin with-app-login 예제에서 isTossApp() 분기 + authCode → fetch 패턴 확인
+- F003 클라이언트 구현 (서버 변경 없음):
+  - src/lib/environment.ts: getOperationalEnvironment() dynamic import + 결과 캐시
+  - src/lib/toss-login.ts: requestTossAppLogin() (웹 mock 0.8s + 토스 실제 SDK 호출),
+    registerUnlinkHandler() 구조만 (SDK 이벤트 API 확정 전 no-op)
+  - src/lib/api-client.ts: apiFetch<T> (VITE_API_BASE_URL + credentials:'include' + ApiError)
+  - src/hooks/useAuth.ts: React Query mutation 기반 (meQuery는 enabled:false)
+    → login/logout/user/isLoggedIn/isGuest/error 노출
+  - src/pages/Intro.tsx: handleStart에서 await login() 후 /home 이동, error/loading UI
+  - .env.example: VITE_API_BASE_URL=http://localhost:3000
+- SDK Safety: @apps-in-toss/web-framework는 dynamic import로만 접근 (top-level import 없음)
+- 검증 메모:
+  - miniapp/node_modules 미설치 → tsc/vitest 다음 세션에서 실행 예정
+  - @tanstack/react-query ^5.83.0, @apps-in-toss/web-framework ^2.0.1 package.json에 확인됨
+  - 실제 SDK 동작 검증은 토스 런타임 환경 또는 F008에서 CORS 설정 후 가능
+- 다음 작업: F004 (응원팀 선택 화면) — TeamSelect 페이지, 10구단 리스트, teamCode 저장 API
+
 ## 위임된 이슈 (future features가 인계받음)
 - NavigationBar 백버튼=첫 화면 앱종료 검증 → F009
 - 글로벌 디자인 토큰 TDS 규격 정리 (index.css 재정의) → F010
 - Pretendard/Noto Sans KR 한글 웹폰트 통일 → F010
+- 서버 CORS middleware 설정 (miniapp origin 허용) → F008
+- miniapp .env.local 실제 값 설정 + pnpm install + E2E 로그인 검증 → F008
+- F003-followup: SDK 공식 unlink 이벤트 API 확정 후 registerUnlinkHandler 내부 로직 교체
+- F003-followup: 서버 logout 엔드포인트 추가 (쿠키 제거)
+
+## 별도 이슈 (btw — 심사 직전 검토)
+- 서버 session_token에 토스 accessToken 직접 저장 → 앱 자체 JWT 발급 구조로 리팩토링
+  (현재: httpOnly 쿠키지만 토스 토큰이 네트워크 상에서 클라이언트로 Set-Cookie되는 구조)
+  (개선: 서버 세션 스토어에 토스 토큰 보관 + 짧은 자체 JWT를 클라이언트에 발급)
+  (영향도: 중간. F012 최종 점검 또는 별도 security 패스에서 처리)
 
 ## 결정 사항
 - navigationBar 설정: granite.config.ts의 필드가 아니라 런타임 NavigationBar 컴포넌트로 처리 (with-navigation-bar 예제 기준)
