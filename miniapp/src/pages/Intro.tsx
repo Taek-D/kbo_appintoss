@@ -32,8 +32,13 @@ export default function Intro() {
 
   const handleStart = async () => {
     try {
-      await login();
-      navigate("/home");
+      const user = await login();
+      // F004: 신규 사용자(team_code 미설정) → 응원팀 선택, 기존 사용자 → 홈
+      if (user.team_code === null) {
+        navigate("/team-select");
+      } else {
+        navigate("/home");
+      }
     } catch {
       // 에러 메시지는 useAuth.error로 노출됨 — 아래 error 영역에서 렌더.
     }

@@ -63,6 +63,42 @@
   - 실제 SDK 동작 검증은 토스 런타임 환경 또는 F008에서 CORS 설정 후 가능
 - 다음 작업: F004 (응원팀 선택 화면) — TeamSelect 페이지, 10구단 리스트, teamCode 저장 API
 
+### Session 4 — 2026-04-11 (F004 구현)
+- 조사: 상위 kbo_game에 PUT /api/subscription 엔드포인트 완비
+  - body: { team_code: 'HH'|'OB'|'LG'|'KT'|'SS'|'NC'|'SK'|'LT'|'WO'|'KI' } (Zod enum)
+  - 응답: { success: true, user: { id, team_code, subscribed } }
+  - 게스트 fallback 지원 (session_token 없으면 'guest'로 처리)
+  - 서버 측 Zod 스키마(UpdateTeamRequestSchema)와 클라이언트 literal union 동기화
+- F004 클라이언트 구현 (서버 변경 없음):
+  - src/lib/teams.ts: TeamCode literal union + KBO_TEAMS 상수 10건
+    - 가나다 순 정렬 (KIA, KT, LG, NC, SSG, 두산, 롯데, 삼성, 키움, 한화)
+    - 각 팀: code / name / shortName / color / emoji
+    - isTeamCode 타입 가드 + findTeam 헬퍼
+  - src/hooks/useAuth.ts: selectTeam mutation 추가
+    - putSubscription(teamCode) → PUT /api/subscription
+    - onSuccess 시 AUTH_QUERY_KEY 캐시 user 갱신
+    - selectTeam / isSelectingTeam / selectTeamError 노출
+  - src/pages/TeamSelect.tsx: 2열 5행 그리드 + 선택→저장 CTA
+    - 선택 상태는 로컬 state (pendingCode)
+    - 기존 team_code가 있으면 초기 선택으로 복원 (변경 시나리오 대응)
+    - 저장 성공 시 navigate('/home')
+    - 에러는 인라인 영역으로 노출 (alert 금지 규칙)
+    - 인라인 스타일 + KOREAN_STACK 유지 (Intro.tsx와 동일 패턴)
+    - role="radiogroup" / role="radio" / aria-checked 접근성 속성
+    - 커스텀 헤더 없음 (NavigationBar는 F009에서 통합)
+  - src/App.tsx: /team-select 라우트 추가
+  - src/pages/Intro.tsx: handleStart 분기 로직
+    - login() 결과의 user.team_code === null → /team-select
+    - 기존 사용자(team_code 있음) → /home
+- 검증 결과 (F001~F004):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (전부 Session 3.5와 동일한 템플릿 경고)
+  - pnpm test: 1 passed (템플릿 example test, regression 없음)
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  - F003의 requestTossAppLogin 재사용만으로 충분 (selectTeam은 순수 서버 API)
+- 다음 작업: F005 (메인 경기 리스트 화면) — Home.tsx, 오늘 경기 fetch,
+  라이브/종료 상태, 경기 상세 네비게이션
+
 ### Session 3.5 — 2026-04-11 (설치 + 검증)
 - 발견: 루트 pnpm-workspace.yaml 때문에 `pnpm install`이 miniapp을 workspace 컨텍스트로
   잡아 442ms만에 아무것도 설치하지 않고 exit 0으로 종료.
@@ -86,11 +122,14 @@
 ## 위임된 이슈 (future features가 인계받음)
 - NavigationBar 백버튼=첫 화면 앱종료 검증 → F009
 - 글로벌 디자인 토큰 TDS 규격 정리 (index.css 재정의) → F010
+- TeamSelect / Intro의 인라인 스타일을 TDS 컴포넌트로 교체 → F010
 - Pretendard/Noto Sans KR 한글 웹폰트 통일 → F010
 - 서버 CORS middleware 설정 (miniapp origin 허용) → F008
-- miniapp .env.local 실제 값 설정 + pnpm install + E2E 로그인 검증 → F008
+- miniapp .env.local 실제 값 설정 + pnpm install + E2E 로그인/팀저장 검증 → F008
+- 팀 이모지/이니셜을 공식 로고 이미지로 교체 → F010 또는 별도 assets 패스
 - F003-followup: SDK 공식 unlink 이벤트 API 확정 후 registerUnlinkHandler 내부 로직 교체
 - F003-followup: 서버 logout 엔드포인트 추가 (쿠키 제거)
+- F004-followup: /home에 "응원팀 변경" 진입점 추가 (TeamSelect는 기존 team_code 복원 로직 이미 보유)
 
 ## 별도 이슈 (btw — 심사 직전 검토)
 - 서버 session_token에 토스 accessToken 직접 저장 → 앱 자체 JWT 발급 구조로 리팩토링

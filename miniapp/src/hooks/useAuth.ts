@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
 import { apiFetch } from "../lib/api-client";
+import type { TeamCode } from "../lib/teams";
 import {
   registerUnlinkHandler,
   requestTossAppLogin,
@@ -18,6 +19,11 @@ export interface AuthUser {
 }
 
 interface LoginResponse {
+  success: true;
+  user: AuthUser;
+}
+
+interface SubscriptionResponse {
   success: true;
   user: AuthUser;
 }
@@ -42,6 +48,14 @@ async function postLogin(result: TossAuthResult): Promise<AuthUser> {
       authorizationCode: result.authorizationCode,
       referrer: result.referrer === "SANDBOX" ? "sandbox" : "DEFAULT",
     }),
+  });
+  return user;
+}
+
+async function putSubscription(teamCode: TeamCode): Promise<AuthUser> {
+  const { user } = await apiFetch<SubscriptionResponse>("/api/subscription", {
+    method: "PUT",
+    body: JSON.stringify({ team_code: teamCode }),
   });
   return user;
 }
@@ -84,6 +98,18 @@ export function useAuth() {
     },
   });
 
+  /**
+   * F004: 응원팀 저장 — PUT /api/subscription.
+   * 성공 시 AUTH_QUERY_KEY 캐시의 user.team_code가 갱신된다.
+   * 게스트 모드도 서버에서 fallback 처리되므로 로그인 여부 관계없이 호출 가능.
+   */
+  const selectTeamMutation = useMutation({
+    mutationFn: (teamCode: TeamCode) => putSubscription(teamCode),
+    onSuccess: (user) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+    },
+  });
+
   const logout = useCallback(() => {
     // TODO(F003-followup): 서버 측 logout 엔드포인트 호출 (쿠키 제거)
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
@@ -102,6 +128,10 @@ export function useAuth() {
     loginMutation.error instanceof Error ? loginMutation.error.message : null;
   const meError =
     meQuery.error instanceof Error ? meQuery.error.message : null;
+  const selectTeamError =
+    selectTeamMutation.error instanceof Error
+      ? selectTeamMutation.error.message
+      : null;
 
   return {
     user,
@@ -111,5 +141,8 @@ export function useAuth() {
     error: loginError ?? meError,
     login: loginMutation.mutateAsync,
     logout,
+    selectTeam: selectTeamMutation.mutateAsync,
+    isSelectingTeam: selectTeamMutation.isPending,
+    selectTeamError,
   };
 }

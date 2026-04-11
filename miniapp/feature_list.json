@@ -60,9 +60,9 @@
         "선택 후 서버에 userKey + teamCode 저장 API 호출",
         "TDS 컴포넌트 적용"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "커스텀 헤더 금지 — NavigationBar만 사용"
+      "notes": "클라이언트 레이어 완결. lib/teams.ts (10구단 상수 + literal union), useAuth.selectTeam (PUT /api/subscription), TeamSelect.tsx (2열 그리드), Intro 분기 로직 추가. TDS 컴포넌트 적용은 F010으로 위임 (인라인 스타일 + KOREAN_STACK 유지). 서버 E2E 검증은 F008로 위임. NavigationBar는 F009."
     },
     {
       "id": "F005",

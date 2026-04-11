@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Intro from "./pages/Intro";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import TeamSelect from "./pages/TeamSelect";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
         <Routes>
           {/* 인트로/랜딩 — 앱 시작 직후 로그인 금지 규칙 때문에 루트는 반드시 Intro */}
           <Route path="/" element={<Intro />} />
+          <Route path="/team-select" element={<TeamSelect />} />
           <Route path="/home" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
