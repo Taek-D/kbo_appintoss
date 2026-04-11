@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/miniapp/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -19,6 +20,10 @@
 
 # production
 /build
+/miniapp/dist
+
+# bkit agent state (runtime-mutable)
+/miniapp/.bkit/
 
 # misc
 .DS_Store
@@ -40,3 +45,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel

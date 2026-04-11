@@ -1,0 +1,179 @@
+{
+  "project": "KBO 야구 알리미",
+  "created": "2026-04-10",
+  "appType": "non-game",
+  "brandDisplayName": "KBO 야구 알리미",
+  "primaryColor": "#3182F6",
+  "features": [
+    {
+      "id": "F001",
+      "category": "infrastructure",
+      "description": "프로젝트 초기 세팅 (반려방지)",
+      "steps": [
+        "granite.config.ts 생성",
+        "index.html viewport + 브랜딩 메타태그",
+        "package.json name 변경",
+        "feature_list.json 생성",
+        "claude-progress.txt 생성"
+      ],
+      "passes": true,
+      "sdkBlock": null,
+      "notes": "harness-init 1회차 완료"
+    },
+    {
+      "id": "F002",
+      "category": "ui",
+      "description": "인트로/랜딩 화면",
+      "steps": [
+        "src/pages/Intro.tsx 구현",
+        "App.tsx 루트 라우트를 Intro로 변경",
+        "브랜드 로고/슬로건 노출",
+        "'시작하기' CTA로 로그인 플로우 진입",
+        "NavigationBar 백버튼이 첫 화면에서 앱 종료되도록 확인"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "appLogin() 즉시 호출 금지 — 반드시 사용자 액션 후 진입"
+    },
+    {
+      "id": "F003",
+      "category": "auth",
+      "description": "토스 로그인 (appLogin)",
+      "steps": [
+        "with-app-login 예제 구조 참조",
+        "Dynamic import + isSupported 체크",
+        "unlink 콜백 핸들러 등록",
+        "서버와 JWT 교환 (kbo_game Next.js API)",
+        "재로그인 플로우"
+      ],
+      "passes": false,
+      "sdkBlock": "with-app-login",
+      "notes": "OAuth 토큰은 서버에서만, 클라이언트에는 앱 자체 JWT"
+    },
+    {
+      "id": "F004",
+      "category": "ui",
+      "description": "응원팀 선택 화면",
+      "steps": [
+        "src/pages/TeamSelect.tsx 구현",
+        "KBO 10구단 리스트 렌더링",
+        "선택 후 서버에 userKey + teamCode 저장 API 호출",
+        "TDS 컴포넌트 적용"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "커스텀 헤더 금지 — NavigationBar만 사용"
+    },
+    {
+      "id": "F005",
+      "category": "ui",
+      "description": "메인 경기 리스트 화면",
+      "steps": [
+        "src/pages/Home.tsx 구현",
+        "kbo_game API에서 오늘 경기 목록 fetch",
+        "라이브/종료 상태 표시",
+        "경기 상세로 이동 (/game/:id)"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "수평 스크롤 금지, 탭바는 플로팅 2-5개 규격"
+    },
+    {
+      "id": "F006",
+      "category": "ui",
+      "description": "경기 결과 상세 화면 (GSAP 애니메이션)",
+      "steps": [
+        "src/pages/GameDetail.tsx 구현",
+        "GSAP + Lenis 재사용 (kbo_game 구현 포팅)",
+        "과도한 blinking/애니메이션 지양",
+        "스코어보드, 하이라이트 요약"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "kbo_game/src/components/summary 포팅 대상"
+    },
+    {
+      "id": "F007",
+      "category": "share",
+      "description": "경기 결과 공유",
+      "steps": [
+        "getTossShareLink() 사용",
+        "share API 호출",
+        "공유 결과 화면 렌더링 확인",
+        "자사 웹사이트 링크 공유 금지"
+      ],
+      "passes": false,
+      "sdkBlock": "with-share-link",
+      "notes": "공유 템플릿은 브랜드 통일 규칙 준수"
+    },
+    {
+      "id": "F008",
+      "category": "logic",
+      "description": "kbo_game 백엔드 API 연동",
+      "steps": [
+        "VITE_API_BASE_URL 환경변수",
+        "fetch 래퍼 + JWT 자동 첨부",
+        "kbo_game/src/app/api/* 엔드포인트 CORS 화이트리스트 추가",
+        "에러 응답 표준화"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "기존 Next.js API Routes를 REST로 호출 — 하이브리드 아키텍처"
+    },
+    {
+      "id": "F009",
+      "category": "ui",
+      "description": "NavigationBar 통합",
+      "steps": [
+        "with-navigation-bar 예제 참조",
+        "useNavigationBar / NavigationBar 설정",
+        "첫 화면 뒤로가기 = 앱 종료",
+        "액세서리 버튼 필요시 모노톤 1개만"
+      ],
+      "passes": false,
+      "sdkBlock": "with-navigation-bar",
+      "notes": "커스텀 헤더/백버튼 절대 금지"
+    },
+    {
+      "id": "F010",
+      "category": "infrastructure",
+      "description": "TDS 디자인 시스템 적용",
+      "steps": [
+        "/appintoss-tds-mobile 스킬 실행",
+        "Tailwind 토큰을 TDS 규격에 맞춰 재정의",
+        "공통 컴포넌트(Button, Dialog, BottomSheet) 교체",
+        "alert/confirm/prompt → AlertDialog로 치환"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "비게임 필수"
+    },
+    {
+      "id": "F011",
+      "category": "logic",
+      "description": "권한 처리 (알림)",
+      "steps": [
+        "Toss permission 바텀싯 사용",
+        "실제 요청할 권한만 표시",
+        "거부 시 재요청/가이드"
+      ],
+      "passes": false,
+      "sdkBlock": "with-permission",
+      "notes": "알림 권한 거부 대응 UI 필수"
+    },
+    {
+      "id": "F012",
+      "category": "ui",
+      "description": "최종 규칙 검증 및 출시 체크리스트",
+      "steps": [
+        "/harness-validate 전체 스캔",
+        "/appintoss-nongame-launch-checklist 11단계",
+        "브랜딩 일치 최종 확인",
+        "스킴/라우팅 404 체크"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "심사 직전 최종 관문"
+    }
+  ]
+}

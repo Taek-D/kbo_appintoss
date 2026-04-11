@@ -1,0 +1,39 @@
+# KBO 야구 알리미 — 미니앱 개발 진행 기록
+
+## 프로젝트 정보
+- 앱 이름: KBO 야구 알리미
+- 앱 유형: 비게임 (TDS 디자인 시스템 필수)
+- 브랜드 컬러: #3182F6 (토스 블루, 추후 KBO 이미지에 맞게 조정 가능)
+- 생성일: 2026-04-10
+- 아키텍처: 하이브리드 — 본 miniapp(Vite/React)은 UI 전용, 백엔드는 상위 kbo_game(Next.js API Routes) 호출
+
+## 핵심 컨텍스트
+- 상위 kbo_game은 Next.js 16 기반의 KBO 경기 종료 알림 서비스 (Supabase + Toss Push API mTLS)
+- 앱인토스는 정적 번들만 업로드 가능하므로 Next.js를 그대로 쓸 수 없음 → miniapp을 Vite로 별도 scaffold
+- miniapp은 kbo_game의 `/api/*` 엔드포인트를 REST로 호출하는 구조
+- 토스 OAuth 토큰은 kbo_game 서버에서만 취급, 클라이언트에는 앱 자체 JWT 발급
+
+## 세션 기록
+
+### Session 1 — 2026-04-10 (harness-init)
+- apps-in-toss-fullstack-templates를 miniapp/으로 rename, 내부 .git 제거
+- package.json name → kbo-game-miniapp
+- .gitignore에 miniapp/node_modules, miniapp/dist 추가
+- granite.config.ts 생성 (appName, displayName, primaryColor, web host/port)
+- index.html 업데이트: lang=ko, viewport user-scalable=no, title/og:title 통일
+- feature_list.json 생성: 12개 기능 등록 (F001만 passes=true)
+- claude-progress.txt 생성 (본 파일)
+- 다음 작업: F002 (인트로/랜딩 화면) — App.tsx 루트 라우트 교체 및 Intro 스켈레톤 구현
+
+## 결정 사항
+- navigationBar 설정: granite.config.ts의 필드가 아니라 런타임 NavigationBar 컴포넌트로 처리 (with-navigation-bar 예제 기준)
+- API 통신: VITE_API_BASE_URL 환경변수 기반 fetch (F008에서 구현)
+- 라우팅: 기본 템플릿의 react-router-dom 유지
+
+## 경계선 (절대 하지 말 것)
+- appLogin()을 앱 시작 직후 호출 ❌ → 반드시 Intro → 사용자 액션 → 로그인
+- 커스텀 헤더/백버튼 ❌ → NavigationBar만 사용
+- alert/confirm/prompt ❌ → shadcn AlertDialog 또는 TDS Dialog
+- 자사 웹사이트 공유 링크 ❌ → getTossShareLink()
+- 앱 설치 유도 문구 ❌
+- 핀치줌 허용 ❌ (index.html에서 이미 차단)
