@@ -99,6 +99,47 @@
 - 다음 작업: F005 (메인 경기 리스트 화면) — Home.tsx, 오늘 경기 fetch,
   라이브/종료 상태, 경기 상세 네비게이션
 
+### Session 5 — 2026-04-12 (F005 구현)
+- 조사: 상위 kbo_game에 /api/games/today, /api/games/[id] 엔드포인트 완비
+  - GET /api/games/today → { games: Game[] } (Asia/Seoul 오늘 날짜 기준, started_at ASC)
+  - GET /api/games/:id → { game: Game } (uuid Zod 검증, 없으면 404)
+  - 서버 public.games 스키마: id/game_date/home_team/away_team/status/home_score/
+    away_score/inning_data(jsonb|null)/started_at/finished_at
+  - 서버 GameStatus: 'scheduled' | 'playing' | 'finished' | 'cancelled'
+    ⚠ 'live'가 아니라 'playing'임에 주의 — miniapp 타입도 'playing'으로 동기화
+  - home_team/away_team은 text 컬럼 — TeamCode 전 범위가 아닐 수 있어 fallback 필요
+- F005 클라이언트 구현 (서버 변경 없음):
+  - src/lib/games.ts: Game/GameStatus 타입 + fetchTodayGames/fetchGameDetail +
+    isMyTeamGame / findTeamByRawCode(미등록 코드 fallback) /
+    formatGameTime(Intl Asia/Seoul HH:mm) / isGameDetailAvailable(finished only)
+  - src/hooks/useTodayGames.ts: React Query useQuery, staleTime 60s, retry:false,
+    games/isLoading/isRefetching/error/refetch 노출
+  - src/pages/Home.tsx:
+    * 상단: "오늘의 KBO" 레이블 + 응원팀 shortName 강조 (myTeam 있을 때)
+    * 내 팀 경기 섹션 + 다른 경기 섹션 분리 (심사 규칙: 응원팀 우선 노출)
+    * GameRow: 상태 뱃지(playing=토스 그린 pulse 점 / finished=연회색 / cancelled=취소 /
+      scheduled=시간), 팀명 + 스코어 or 시간, 승리팀 BRAND_COLOR 강조, 패배팀 TEXT_WEAK
+    * 종료 경기만 탭 가능(onClick) — 진행 중/예정/취소는 disabled (UI 기능 완결성)
+    * 응원팀 경기 카드는 BRAND_COLOR 테두리 + 그림자 + "내 팀" 라벨
+    * 로딩: 스켈레톤 3행 / 에러: 인라인 + 다시 시도 / 빈 상태: ⚾ + 안내
+    * 수평 스크롤 없음, 커스텀 헤더 없음, alert 없음 (모두 NEVER 규칙 준수)
+    * Intro.tsx/TeamSelect.tsx와 동일한 인라인 스타일 + KOREAN_STACK 패턴
+  - src/pages/GameDetail.tsx: F005 범위의 placeholder
+    * params.id만 표시 + "홈으로" 복귀 버튼 (F006에서 GSAP 포팅 본 구현 예정)
+    * 탭했을 때 404 나지 않도록 라우트 확보 목적
+  - src/App.tsx:
+    * /home → Index(템플릿 landing) → Home 교체
+    * /game/:id → GameDetail 라우트 추가
+    * Index.tsx 파일 자체는 유지 (템플릿 참고용, import만 제거됨)
+- 검증 결과 (F001~F005):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (전부 Session 3.5와 동일한 템플릿/robin 경고 — regression 0)
+  - pnpm test --run: 1 passed (템플릿 example test, regression 없음)
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  - F005는 순수 서버 API 호출 + UI 렌더링 (Dynamic import 패턴 유지)
+- 다음 작업: F006 (경기 결과 상세 화면 GSAP 애니메이션)
+  — kbo_game/src/components/summary 포팅, GameDetail.tsx placeholder 본 구현 교체
+
 ### Session 3.5 — 2026-04-11 (설치 + 검증)
 - 발견: 루트 pnpm-workspace.yaml 때문에 `pnpm install`이 miniapp을 workspace 컨텍스트로
   잡아 442ms만에 아무것도 설치하지 않고 exit 0으로 종료.
@@ -130,6 +171,10 @@
 - F003-followup: SDK 공식 unlink 이벤트 API 확정 후 registerUnlinkHandler 내부 로직 교체
 - F003-followup: 서버 logout 엔드포인트 추가 (쿠키 제거)
 - F004-followup: /home에 "응원팀 변경" 진입점 추가 (TeamSelect는 기존 team_code 복원 로직 이미 보유)
+- F005-followup: 'playing' 상태 경기가 있을 때 refetchInterval(30~60s) 적용 (지금은 staleTime 60s만)
+- F005-followup: pull-to-refresh 또는 상단 리프레시 버튼 (toss 패턴) — F010 TDS 패스에서 검토
+- F005-followup: Index.tsx(템플릿 landing) 파일 삭제 여부 결정 — 현재 import 제거만 했음
+- F005-followup: 서버 text 컬럼 home_team/away_team에 미등록 코드가 올 경우 UI fallback 실제 케이스 검증 (F008 CORS 연동 후)
 
 ## 별도 이슈 (btw — 심사 직전 검토)
 - 서버 session_token에 토스 accessToken 직접 저장 → 앱 자체 JWT 발급 구조로 리팩토링

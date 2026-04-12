@@ -74,9 +74,9 @@
         "라이브/종료 상태 표시",
         "경기 상세로 이동 (/game/:id)"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "수평 스크롤 금지, 탭바는 플로팅 2-5개 규격"
+      "notes": "클라이언트 레이어 완결. src/lib/games.ts(타입+fetcher), useTodayGames 훅(React Query 60s stale), Home.tsx(내 팀/다른 경기 분리, playing/finished/cancelled/scheduled 뱃지, 수평 스크롤 없음, BRAND_COLOR+KOREAN_STACK 인라인 유지), GameDetail placeholder(F006 본 구현 대기), App.tsx /home=Home + /game/:id 라우트. TDS 교체는 F010, NavigationBar는 F009, 서버 E2E(CORS)는 F008로 위임."
     },
     {
       "id": "F006",
