@@ -2,6 +2,16 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KBO_TEAMS, type Team, type TeamCode } from "../lib/teams";
 import { useAuth } from "../hooks/useAuth";
+import {
+  BRAND_COLOR,
+  TEXT_STRONG,
+  TEXT_MEDIUM,
+  TEXT_WEAK,
+  BORDER_WEAK,
+  SURFACE_ELEVATED,
+  ERROR_COLOR,
+  KOREAN_STACK,
+} from "../lib/design-tokens";
 
 /**
  * F004: 응원팀 선택 화면.
@@ -22,17 +32,6 @@ import { useAuth } from "../hooks/useAuth";
  * - 전역 디자인 토큰은 F010에서 TDS로 재정의 예정
  * - 팀 로고는 이모지 + 이니셜 — 출시 전 공식 이미지 교체
  */
-
-const BRAND_COLOR = "#3182F6";
-const TEXT_STRONG = "#191F28";
-const TEXT_MEDIUM = "#4E5968";
-const TEXT_WEAK = "#8B95A1";
-const BORDER_WEAK = "#E5E8EB";
-const SURFACE_ELEVATED = "#F9FAFB";
-const ERROR_COLOR = "#F04452";
-
-const KOREAN_STACK =
-  "system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
 
 type TeamCardProps = {
   team: Team;

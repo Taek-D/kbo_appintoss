@@ -1,5 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import {
+  BRAND_COLOR,
+  TEXT_STRONG,
+  TEXT_MEDIUM,
+  TEXT_WEAK,
+  ERROR_COLOR,
+  KOREAN_STACK,
+} from "../lib/design-tokens";
 
 /**
  * F002: 인트로/랜딩 화면.
@@ -16,15 +24,6 @@ import { useAuth } from "../hooks/useAuth";
  *
  * TODO(F009): 첫 화면 뒤로가기 = 앱 종료 검증 (NavigationBar 통합 시).
  */
-
-const BRAND_COLOR = "#3182F6";
-const TEXT_STRONG = "#191F28";
-const TEXT_MEDIUM = "#4E5968";
-const TEXT_WEAK = "#8B95A1";
-const ERROR_COLOR = "#F04452";
-
-const KOREAN_STACK =
-  "system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
 
 export default function Intro() {
   const navigate = useNavigate();

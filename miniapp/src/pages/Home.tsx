@@ -10,6 +10,18 @@ import {
   type Game,
 } from "../lib/games";
 import { findTeam, isTeamCode } from "../lib/teams";
+import {
+  BRAND_COLOR,
+  TEXT_STRONG,
+  TEXT_MEDIUM,
+  TEXT_WEAK,
+  BORDER_WEAK,
+  SURFACE_ELEVATED,
+  ERROR_COLOR,
+  LIVE_COLOR,
+  LIVE_BG,
+  KOREAN_STACK,
+} from "../lib/design-tokens";
 
 /**
  * F005: 메인 경기 리스트 화면.
@@ -37,19 +49,6 @@ import { findTeam, isTeamCode } from "../lib/teams";
  *   - 응원팀 변경 진입점 → F010 또는 별도 UX 패스
  *   - 알림 on/off 토글 → F011
  */
-
-const BRAND_COLOR = "#3182F6";
-const TEXT_STRONG = "#191F28";
-const TEXT_MEDIUM = "#4E5968";
-const TEXT_WEAK = "#8B95A1";
-const BORDER_WEAK = "#E5E8EB";
-const SURFACE_ELEVATED = "#F9FAFB";
-const ERROR_COLOR = "#F04452";
-const LIVE_COLOR = "#0CAA6E"; // 토스 그린 계열 — 경기 중 표시
-const LIVE_BG = "#E6F9F0";
-
-const KOREAN_STACK =
-  "system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
 
 /** 팀 코드 → 표시명. 미등록 코드는 raw 반환. */
 function displayTeamName(raw: string): string {

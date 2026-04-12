@@ -12,6 +12,19 @@ import {
   type InningScore,
 } from "../lib/games";
 import { isTeamCode, findTeam, type Team } from "../lib/teams";
+import {
+  BRAND_COLOR,
+  BRAND_SOFT,
+  TEXT_STRONG,
+  TEXT_MEDIUM,
+  TEXT_WEAK,
+  BORDER_WEAK,
+  SURFACE_ELEVATED,
+  ERROR_COLOR,
+  SUCCESS_COLOR,
+  SUCCESS_SOFT,
+  KOREAN_STACK,
+} from "../lib/design-tokens";
 
 /**
  * F006: 경기 결과 상세 화면.
@@ -52,20 +65,6 @@ import { isTeamCode, findTeam, type Team } from "../lib/teams";
  *     Web Share API → clipboard 순으로 fallback (자사 웹사이트 링크 금지)
  *   - 공유 결과는 인라인 피드백 영역으로 노출 (alert/toast 금지)
  */
-
-const BRAND_COLOR = "#3182F6";
-const BRAND_SOFT = "#E8F1FF";
-const TEXT_STRONG = "#191F28";
-const TEXT_MEDIUM = "#4E5968";
-const TEXT_WEAK = "#8B95A1";
-const BORDER_WEAK = "#E5E8EB";
-const SURFACE_ELEVATED = "#F9FAFB";
-const ERROR_COLOR = "#F04452";
-const SUCCESS_COLOR = "#0CAA6E";
-const SUCCESS_SOFT = "#E6F9F0";
-
-const KOREAN_STACK =
-  "system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif";
 
 const TOTAL_INNINGS = 9;
 

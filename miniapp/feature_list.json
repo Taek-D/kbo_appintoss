@@ -144,9 +144,9 @@
         "공통 컴포넌트(Button, Dialog, BottomSheet) 교체",
         "alert/confirm/prompt → AlertDialog로 치환"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "비게임 필수"
+      "notes": "TDS 패키지 설치(@toss/tds-mobile 2.3.0 + tds-mobile-ait + tds-colors + @emotion/react). TDSMobileAITProvider App 루트 래핑. index.css 다크 게이밍 테마→TDS 라이트 테마 전면 교체. design-tokens.ts 중앙 토큰 모듈 신규. 4개 페이지(Intro/TeamSelect/Home/GameDetail) 인라인 상수→중앙 import 리팩터링. alert/confirm/prompt 0건 확인. TDS Button/ListRow 등 컴포넌트 교체는 별도 UX 패스로 위임."
     },
     {
       "id": "F011",

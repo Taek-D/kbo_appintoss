@@ -225,6 +225,45 @@
 - 다음 작업: F010 (TDS 디자인 시스템 적용) — /appintoss-tds-mobile 스킬 실행,
   Tailwind 토큰 TDS 규격 재정의, 공통 컴포넌트 교체, Brainstorm.tsx/Index.tsx 고아 파일 정리.
 
+### Session 10 — 2026-04-12 (F010 구현)
+- 조사: /appintoss-tds-mobile 스킬 5개 문서 전문 파악
+  (colors.md, components.md, typography.md, migration-v2.md, SKILL.md)
+- 조사: 4개 페이지에 동일한 디자인 상수(BRAND_COLOR 등) 4벌 중복 선언 확인
+- 조사: index.css가 다크 게이밍 테마(Orbitron, Space Grotesk, 검정 배경)를 유지 중
+  → 모든 페이지에서 인라인 스타일로 전면 오버라이드하고 있었음
+- 조사: alert()/confirm()/prompt() 사용 0건 확인 → F010 step 4 이미 충족
+- TDS 패키지 설치 성공:
+  * @toss/tds-mobile 2.3.0
+  * @toss/tds-mobile-ait 2.3.0
+  * @toss/tds-colors 0.1.0
+  * @emotion/react 11.14.0
+- F010 구현:
+  1. src/lib/design-tokens.ts 신규 — TDS 토큰 중앙 모듈
+     (grey50~900, blue50/500/600/700, red50/500, green50/500/600 + 시맨틱 alias)
+  2. src/index.css 전면 교체 — 다크 게이밍 → TDS 라이트 테마
+     - Orbitron/Space Grotesk Google Fonts import 제거
+     - :root HSL 변수 전부 TDS 라이트값으로 교체 (white bg, grey900 fg, blue500 primary)
+     - --font-sans를 TDS 폰트 스택으로 설정
+     - 게이밍 CSS(glow-pulse, scan-line, hero 등) 전면 제거
+     - accordion 키프레임 + tailwind/tw-animate-css import 유지
+  3. App.tsx에 TDSMobileAITProvider 최외곽 래핑
+  4. 4개 페이지 리팩터링 (Intro/TeamSelect/Home/GameDetail):
+     - 파일별 인라인 상수 블록 전부 제거
+     - design-tokens.ts에서 import로 교체
+     - 기존 변수명(BRAND_COLOR, KOREAN_STACK 등) 유지 → style 속성 변경 0
+- 검증 결과 (F001~F010):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (Session 3.5와 동일 — regression 0)
+  - pnpm test --run: 1 passed (regression 0)
+  - grep으로 4개 페이지에서 인라인 상수 완전 제거 확인
+- SDK Safety: TDSMobileAITProvider는 static import이 허용되는 Provider 컴포넌트
+  (런타임 SDK API가 아님). @apps-in-toss/web-framework의 런타임 API만 dynamic import 필수.
+- 위임 목록:
+  - TDS Button/ListRow/Badge 등 컴포넌트 단위 교체 → 별도 UX 패스
+  - Brainstorm.tsx/Index.tsx 고아 파일 정리 → F012 cleanup 또는 별도 패스
+  - brand.icon 600×600 로고 에셋 → 출시 직전 에셋 패스
+- 다음 작업: F011 (권한 처리 — 알림) — Toss permission 바텀싯, 알림 권한 요청/거부 대응 UI.
+
 ### Session 7 — 2026-04-12 (F007 구현)
 - 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
   - useShareLink 훅: isTossApp() 분기 → Dynamic import `getTossShareLink(url, ogImageUrl?)`
