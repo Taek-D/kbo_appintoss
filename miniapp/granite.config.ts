@@ -6,6 +6,10 @@ export default defineConfig({
     displayName: 'KBO 야구 알리미',
     primaryColor: '#3182F6',
   },
+  navigationBar: {
+    withBackButton: true,
+    withHomeButton: true,
+  },
   web: {
     host: 'localhost',
     port: 5173,

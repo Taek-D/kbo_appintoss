@@ -130,9 +130,9 @@
         "첫 화면 뒤로가기 = 앱 종료",
         "액세서리 버튼 필요시 모노톤 1개만"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": "with-navigation-bar",
-      "notes": "커스텀 헤더/백버튼 절대 금지"
+      "notes": "granite.config.ts에 navigationBar: { withBackButton: true, withHomeButton: true } 추가. 기존 5개 페이지 커스텀 헤더/백버튼 감사 통과. 액세서리 버튼은 현재 불필요(0개 허용). 실환경 첫 화면 뒤로가기=앱 종료 스모크 테스트는 F012. brand.icon + 600x600 로고 에셋은 F010 또는 출시 직전 에셋 패스로 위임."
     },
     {
       "id": "F010",
