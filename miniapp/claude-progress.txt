@@ -99,6 +99,70 @@
 - 다음 작업: F005 (메인 경기 리스트 화면) — Home.tsx, 오늘 경기 fetch,
   라이브/종료 상태, 경기 상세 네비게이션
 
+### Session 7 — 2026-04-12 (F007 구현)
+- 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
+  - useShareLink 훅: isTossApp() 분기 → Dynamic import `getTossShareLink(url, ogImageUrl?)`
+  - 토스 환경: `intoss://{path}?{queryString}` 딥링크 생성
+  - 웹 환경: `https://toss.im/app/mock{path}` mock URL + clipboard 복사만
+  - 주목: 예제에는 "share API 호출" 자체가 없음 — getTossShareLink로 URL만 생성하고
+    사용자가 직접 복사하는 구조. miniapp 쪽은 심사 규칙("share API 호출 + 결과 화면
+    정상 렌더")을 만족시키기 위해 Web Share API를 중간 단계로 추가한다.
+- F007 클라이언트 구현 (서버 변경 없음):
+  - src/lib/toss-share.ts (신규):
+    * buildGameSharePayload(game) — 상태별 본문 템플릿
+      - finished : "KIA 10 : 7 한화 (4월 12일 토) · KBO 야구 알리미"
+      - cancelled: "KIA vs 한화 경기가 취소됐어요 (...)"
+      - playing  : "KIA vs 한화 경기 중 (...)"
+      - scheduled: "KIA vs 한화 (...)"
+      - 앱 이름은 브랜딩 통일용 꼬리표로만 사용 — "앱 설치/다운로드" 유도 금지
+    * shareGame(game) → ShareOutcome discriminated union
+      - { type:'shared', via:'native' } | { type:'copied' } |
+        { type:'cancelled' } | { type:'unsupported' }
+    * resolveShareUrl(path) 내부 헬퍼:
+      - isTossApp() true → Dynamic import '@apps-in-toss/web-framework' →
+        getTossShareLink(`intoss://game/{id}`) 호출
+      - SDK 실패/웹 환경 → `https://toss.im/app/mock/game/{id}` mock URL로 graceful degrade
+      - 절대 throw하지 않음 (예외는 모두 mock fallback으로 흡수)
+    * executeShare(payload, url) 내부 헬퍼 — 계단식 fallback:
+      1) navigator.share({title,text,url}) 시도
+         - AbortError → { type:'cancelled' } (사용자 취소)
+         - 기타 에러 → clipboard fallback으로 진행
+      2) navigator.clipboard.writeText(`${text}\n${url}`) 시도
+         → { type:'copied' }
+      3) 모두 실패 → { type:'unsupported' }
+  - src/hooks/useShareGame.ts (신규):
+    * ShareStatus = idle | sharing | done(outcome) | error(message)
+    * useRef 기반 inFlight 가드 — 더블 탭 방지
+    * share(game) 호출은 throw하지 않고 status.phase='error'로 반영 (alert 금지 규칙)
+  - src/pages/GameDetail.tsx 수정:
+    * useShareGame 훅 연결, isSharing 파생 상태
+    * 기존 "홈으로" 단독 CTA를 "공유하기 | 홈으로" 2열 버튼으로 교체
+      - 공유하기: outline 스타일(border+흰 배경+BRAND 텍스트), isSharing 시 disabled
+      - 홈으로: 기존 BRAND 필 버튼 유지
+    * ShareFeedback 컴포넌트 신규 — 하단 CTA 위에 인라인 피드백
+      - done.shared: 표시 없음 (OS 공유창이 피드백 제공)
+      - done.cancelled: 표시 없음 (사용자 취소 = 조용히)
+      - done.copied: "공유 링크를 복사했어요" (BRAND_SOFT 배경)
+      - done.unsupported: "이 환경에서는 공유를 지원하지 않아요"
+      - error: 에러 메시지 (ERROR_SOFT 배경)
+      - role="status" aria-live="polite" — alert 없이 스크린리더에 전달
+- 심사 규칙 체크:
+  - ✅ 자사 웹사이트 링크 금지 → intoss:// 딥링크만 (mock URL은 toss.im 네임스페이스)
+  - ✅ 앱 설치 유도 문구 금지 → 본문에 '설치/다운로드/혜택' 표현 없음
+  - ✅ alert/confirm 금지 → 결과는 인라인 ShareFeedback만
+  - ✅ Static import 금지 → @apps-in-toss/web-framework는 Dynamic import
+  - ✅ isSupported 체크 → resolveShareUrl이 isTossApp() + typeof function 이중 가드
+  - ✅ 브랜딩 통일 → "KBO 야구 알리미" 표기 일치
+- SDK Safety: getTossShareLink는 dynamic import 블록 안에서만 접근.
+  토스 SDK가 없거나 실패해도 mock URL → Web Share API → clipboard 순으로 항상 동작.
+- 검증 결과 (F001~F007):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (전부 Session 3.5와 동일한 템플릿/robin 경고 — regression 0)
+  - pnpm test --run: 1 passed (템플릿 example test, regression 없음)
+- 다음 작업: F008 (kbo_game 백엔드 API 연동 — CORS)
+  — VITE_API_BASE_URL 실 환경변수 설정, kbo_game/src/middleware.ts에
+    miniapp origin 허용 CORS 헤더 추가, 브라우저 E2E 로그인 / 팀 저장 / 홈 / 상세 / 공유 검증
+
 ### Session 6 — 2026-04-12 (F006 구현)
 - 조사: kbo_game/src/components의 ScoreBoard / InningTable / GameCard 원본 파악
   - ScoreBoard: gsap + @gsap/react로 스코어 count-up (textContent 스냅),

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useGameDetail } from "../hooks/useGameDetail";
+import { useShareGame, type ShareStatus } from "../hooks/useShareGame";
 import {
   findTeamByRawCode,
   formatGameDate,
@@ -43,8 +44,13 @@ import { isTeamCode, findTeam, type Team } from "../lib/teams";
  * 위임 이슈:
  *   - NavigationBar 통합 → F009 (현재는 "홈으로" 버튼으로 대체)
  *   - TDS 컴포넌트(Card/Button/Table) 교체 → F010
- *   - 공유 버튼 → F007
  *   - 서버 text 컬럼 fallback 실 케이스 검증 → F008 CORS 연동 후
+ *
+ * F007 공유:
+ *   - 하단 CTA가 "공유하기 | 홈으로" 2열 구성
+ *   - shareGame()은 토스 환경에서 getTossShareLink()로 intoss:// 딥링크를 만든 뒤
+ *     Web Share API → clipboard 순으로 fallback (자사 웹사이트 링크 금지)
+ *   - 공유 결과는 인라인 피드백 영역으로 노출 (alert/toast 금지)
  */
 
 const BRAND_COLOR = "#3182F6";
@@ -148,6 +154,9 @@ type GameDetailViewProps = {
 function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
   const away = useMemo(() => toTeamView(game.away_team), [game.away_team]);
   const home = useMemo(() => toTeamView(game.home_team), [game.home_team]);
+
+  const { status: shareStatus, share } = useShareGame();
+  const isSharing = shareStatus.phase === "sharing";
 
   const homeWin = game.home_score > game.away_score;
   const awayWin = game.away_score > game.home_score;
@@ -282,13 +291,45 @@ function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
         finishedAt={game.finished_at}
       />
 
-      <div style={{ padding: "20px 20px 0 20px" }}>
+      <ShareFeedback status={shareStatus} />
+
+      <div
+        style={{
+          padding: "20px 20px 0 20px",
+          display: "flex",
+          gap: 10,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            void share(game);
+          }}
+          disabled={isSharing}
+          aria-label="경기 결과 공유하기"
+          style={{
+            flex: 1,
+            padding: "16px 20px",
+            borderRadius: 16,
+            border: `1px solid ${BORDER_WEAK}`,
+            background: "#FFFFFF",
+            color: isSharing ? TEXT_WEAK : BRAND_COLOR,
+            fontFamily: KOREAN_STACK,
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: isSharing ? "default" : "pointer",
+            opacity: isSharing ? 0.7 : 1,
+            transition: "opacity 120ms ease-out",
+          }}
+        >
+          {isSharing ? "공유 중..." : "공유하기"}
+        </button>
         <button
           type="button"
           onClick={onHome}
           aria-label="홈으로 이동"
           style={{
-            width: "100%",
+            flex: 1,
             padding: "16px 20px",
             borderRadius: 16,
             border: "none",
@@ -315,6 +356,67 @@ function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
       </div>
     </main>
   );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 공유 피드백 (F007)
+// ─────────────────────────────────────────────────────────────
+
+type ShareFeedbackProps = {
+  status: ShareStatus;
+};
+
+/**
+ * 공유 결과를 하단 CTA 위에 인라인으로 노출.
+ * - done.shared / done.cancelled: 별도 노출 없음
+ *     (OS 공유창이 완료/취소 피드백을 자체적으로 제공)
+ * - done.copied: 링크 복사 안내
+ * - done.unsupported: 공유를 지원하지 않는 환경 안내
+ * - error: 실패 메시지
+ *
+ * alert/confirm 금지 규칙 준수 — 인라인 role="status"로만 표시.
+ */
+function ShareFeedback({ status }: ShareFeedbackProps) {
+  const message = resolveShareMessage(status);
+  if (message === null) return null;
+
+  const isError = status.phase === "error";
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        margin: "12px 20px 0 20px",
+        padding: "12px 16px",
+        borderRadius: 12,
+        background: isError ? "#FFEFEF" : BRAND_SOFT,
+        color: isError ? ERROR_COLOR : BRAND_COLOR,
+        fontSize: 13,
+        fontWeight: 600,
+        textAlign: "center",
+      }}
+    >
+      {message}
+    </div>
+  );
+}
+
+function resolveShareMessage(status: ShareStatus): string | null {
+  if (status.phase === "idle" || status.phase === "sharing") return null;
+  if (status.phase === "error") return status.message;
+
+  switch (status.outcome.type) {
+    case "shared":
+    case "cancelled":
+      return null;
+    case "copied":
+      return "공유 링크를 복사했어요";
+    case "unsupported":
+      return "이 환경에서는 공유를 지원하지 않아요";
+    default:
+      return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────

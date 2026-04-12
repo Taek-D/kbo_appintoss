@@ -102,9 +102,9 @@
         "공유 결과 화면 렌더링 확인",
         "자사 웹사이트 링크 공유 금지"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": "with-share-link",
-      "notes": "공유 템플릿은 브랜드 통일 규칙 준수"
+      "notes": "클라이언트 레이어 완결. src/lib/toss-share.ts(buildGameSharePayload + shareGame, Dynamic import + 계단식 fallback: 토스 SDK → Web Share API → clipboard), src/hooks/useShareGame.ts(phase 기반 상태 머신, inFlight 가드), GameDetail.tsx 하단 CTA를 '공유하기 | 홈으로' 2열로 교체 + ShareFeedback 인라인 피드백. intoss://game/{id} 딥링크만 사용(자사 웹사이트 링크 금지). 본문에 '앱 설치/다운로드' 유도 문구 없음. 실제 토스 환경 E2E는 F008 CORS 연동 후 검증."
     },
     {
       "id": "F008",
