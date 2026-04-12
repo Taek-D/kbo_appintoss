@@ -158,12 +158,43 @@
     F008 수정 파일은 어디에도 없음 → regression 0 확인
   * pre-F008 상태 비교(git stash): typecheck 427 errors로 동일 — 내 변경 기여 0
 
-- 실환경 E2E 검증 (위임):
-  * 브라우저 E2E(dev 서버 2개 기동: kbo_game 3000 + miniapp 5173,
-    로그인 → 팀 저장 → 홈 → 상세 → 공유 플로우)는 이번 세션에서는 미수행.
-  * F008 정적 레이어는 완결했으나 실제 CORS 동작은 브라우저에서만 검증 가능.
-  * 프로덕션 도메인은 ALLOWED_ORIGINS env로 Vercel에 주입해야 함(배포 시 F012에서).
-  * 실환경 검증은 수동 또는 F012 출시 직전 최종 체크리스트에서 수행.
+- 실환경 E2E 검증 (완료 — 같은 세션 후반부):
+  * dev 서버 2개 기동: kbo_game(localhost:3000) + miniapp(**localhost:8080** —
+    vite.config.ts server.port 고정값. 초기 DEV_ORIGINS가 5173 가정이었으나
+    실제 포트를 확인하고 middleware에 8080 추가 교정).
+  * curl로 middleware 단독 검증:
+    - OPTIONS /api/games/today → 204 + ACA-Origin=http://localhost:8080 +
+      ACA-Credentials=true + Methods/Headers/Max-Age 완비 + Vary:Origin
+    - GET /api/games/today → 200 + CORS 헤더 정상 + body {"games":[]}
+    - GET /api/games/{fake-uuid} → 404 + CORS 헤더 정상 + {"error":"Not found"}
+      (middleware가 에러 응답까지 attach 확인)
+  * Playwright 브라우저 E2E:
+    - http://localhost:8080 → Intro 렌더링 정상 (KBO 야구 알리미 / 시작하기)
+    - 로그인 버튼: POST /api/auth/login이 서버에 도달했으나 exchangeAuthCode
+      내부 토스 API 호출이 mock authCode로 hang (CORS는 preflight 통과로 입증)
+    - /team-select 직접 이동: 10구단 그리드 + KIA 선택 → 저장
+    - PUT /api/subscription → 200 OK → /home 리다이렉트
+    - /home: "KIA 오늘 경기는요" 제목(PUT 응답의 user.team_code 캐시 반영) +
+      "오늘은 경기가 없어요" 빈 상태(GET /api/games/today 200)
+    - 페이지 새로 navigate 시 useAuth 자동 호출 없음(meQuery enabled:false) →
+      "오늘의 경기 목록" 기본 제목 복귀 (설계대로)
+    - /game/{fake-uuid}: 404 응답 + GameDetail 에러 UI 정상 렌더링
+      ("경기 정보를 불러오지 못했어요" / "Not found" / 홈으로 + 다시 시도)
+    - Console errors: 0 (React Router v7 future flag warnings 2건만)
+  * 증거 스크린샷: f008-02-home-refresh.png, f008-03-gamedetail-404.png
+  * 결론: CORS middleware + 쿠키 cross-origin + 에러 응답 헤더 attach +
+    404 UI 복구 플로우 전부 실환경 통과.
+
+- 실환경 검증에서 발견한 follow-up (별도 이슈):
+  * vite dev 포트 8080 하드코딩(vite.config.ts) — miniapp 생태계 템플릿 기본값.
+    DEV_ORIGINS는 8080/5173/4173 모두 포함해 향후 변경에도 안전하게 구성.
+  * 프로덕션 배포 시 ALLOWED_ORIGINS env에 실 miniapp 도메인 주입 필요(F012).
+  * POST /api/auth/login이 mock authCode로 서버 측 exchangeAuthCode에서 hang —
+    F008 범위 밖(CORS는 정상). F003-followup으로 서버 측에 mock/test 모드 분기
+    또는 요청 측 timeout을 추가 검토.
+  * Next.js 16.2 경고: "middleware convention deprecated. Please use 'proxy'."
+    → 현재 middleware는 여전히 동작하나 Next 17에서 'proxy' 규약으로 이전 필요.
+    F012 출시 직전 또는 별도 인프라 패스에서 대응.
 
 - SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
   (순수 서버 CORS + 클라이언트 API 래퍼 보강).

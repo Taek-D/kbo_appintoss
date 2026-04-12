@@ -118,7 +118,7 @@
       ],
       "passes": true,
       "sdkBlock": null,
-      "notes": "정적 레이어 완결. kbo_game/src/middleware.ts 신규(CORS 화이트리스트: DEV_ORIGINS + ALLOWED_ORIGINS env, OPTIONS preflight 204, credentials:true, 와일드카드 금지). 쿠키 정책 SameSite: lax→none + secure:true로 전환(auth/login session_token + subscription guest_team). api-client.ts: 네트워크 에러 ApiError(0)로 래핑 + 비-JSON 응답 방어(safeParseJson). miniapp/.env.local 생성(VITE_API_BASE_URL=http://localhost:3000, .gitignore로 제외). 검증: miniapp tsc/lint/test 0 regression, kbo_game typecheck/lint는 사전 상태 유지. 실환경 브라우저 E2E(dev 서버 2개 기동 후 로그인→팀저장→홈→상세→공유)는 F012 출시 직전 또는 수동 검증으로 위임."
+      "notes": "완전 검증. kbo_game/src/middleware.ts 신규(CORS 화이트리스트: DEV_ORIGINS + ALLOWED_ORIGINS env, OPTIONS preflight 204, credentials:true, 와일드카드 금지). DEV_ORIGINS는 miniapp vite.config.ts의 실제 포트 8080을 포함(초기 5173 기본값 가정을 실제 포트로 교정). 쿠키 정책 SameSite: lax→none + secure:true로 전환(auth/login session_token + subscription guest_team). api-client.ts: 네트워크 에러 ApiError(0)로 래핑 + 비-JSON 응답 방어(safeParseJson). miniapp/.env.local 생성(VITE_API_BASE_URL=http://localhost:3000, .gitignore로 제외). 실환경 브라우저 E2E 통과: Playwright로 /team-select → KIA 저장(PUT /api/subscription 200) → /home(GET /api/games/today 200, 오늘 경기 없음 빈 상태) → /game/{fake-uuid}(404 + CORS 헤더 정상). curl preflight: OPTIONS → 204 + ACA-Origin/Methods/Headers/Credentials/Max-Age 완비. 404 에러 응답에도 middleware가 CORS 헤더 attach. 로그인 경로는 서버 exchangeAuthCode가 mock authCode로 실 토스 API를 호출하며 hang하는 이슈가 있으나 CORS와 무관(preflight는 통과, 요청이 서버에 도달함)."
     },
     {
       "id": "F009",

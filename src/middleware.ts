@@ -12,8 +12,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const DEV_ORIGINS = [
-  'http://localhost:5173', // Vite dev server 기본 포트
+  'http://localhost:8080', // miniapp Vite dev — vite.config.ts의 server.port
+  'http://localhost:5173', // Vite dev server 기본 포트(다른 설정 호환)
   'http://localhost:4173', // Vite preview 기본 포트
+  'http://127.0.0.1:8080',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:4173',
 ]
