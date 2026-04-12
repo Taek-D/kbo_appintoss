@@ -46,23 +46,47 @@ export async function requestTossAppLogin(): Promise<TossAuthResult> {
  * unlink(연동 해제) 콜백 등록.
  *
  * 토스 정책: 사용자가 앱 연동을 해제하면 미니앱은 해당 유저를 logout 처리해야 한다.
+ * 콘솔에 콜백 URL 등록 필수 (referrer: UNLINK, WITHDRAWAL_TERMS, WITHDRAWAL_TOSS).
  *
- * TODO(F003-followup): SDK의 정확한 unlink 이벤트 API를 확정한 뒤 활성화한다.
- *   공식 문서: https://developers-apps-in-toss.toss.im/bedrock/reference/framework/로그인/appLogin.html
- *   후보 API:
- *     - appLogin.onUnlink?.(handler)
- *     - 별도 이벤트 채널 (예: onAppLoginUnlink)
- *   확정되면 isTossApp() 분기 추가 후 실제 SDK 이벤트 리스너 등록.
- *
- * 현재 구현: 웹/개발 환경 no-op. 호출 측은 이 구조를 이미 사용하고 있으므로
- * 후속 세션에서 내부 로직만 교체하면 된다.
+ * 토스 앱 환경에서는 SDK의 unlink 이벤트를 감지하여 handler(로그아웃)를 실행한다.
+ * 웹/개발 환경에서는 no-op.
  *
  * @returns cleanup 함수 (React useEffect 반환값으로 사용)
  */
 export function registerUnlinkHandler(handler: () => void): () => void {
-  // 미래 확장을 위해 handler 참조 유지 (lint unused 회피)
-  void handler;
+  let cancelled = false;
+
+  void (async () => {
+    let isToss = false;
+    try {
+      isToss = await isTossApp();
+    } catch {
+      return;
+    }
+    if (!isToss || cancelled) return;
+
+    try {
+      const mod = (await import("@apps-in-toss/web-framework")) as unknown as {
+        appLogin?: {
+          onUnlink?: (cb: () => void) => () => void;
+        };
+      };
+      const onUnlink = mod.appLogin?.onUnlink;
+      if (typeof onUnlink === "function") {
+        const detach = onUnlink(handler);
+        if (typeof detach === "function" && !cancelled) {
+          cleanupRef = detach;
+        }
+      }
+    } catch {
+      // SDK unlink API 미지원 환경 — 무시
+    }
+  })();
+
+  let cleanupRef: (() => void) | null = null;
+
   return () => {
-    // cleanup: 리스너 제거 자리
+    cancelled = true;
+    cleanupRef?.();
   };
 }

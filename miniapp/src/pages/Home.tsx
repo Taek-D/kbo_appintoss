@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useTodayGames } from "../hooks/useTodayGames";
+import { BannerAd } from "../components/BannerAd";
+import { AD_GROUP_IDS } from "../lib/ad-config";
 import {
   findTeamByRawCode,
   formatGameTime,
@@ -446,6 +448,11 @@ export default function Home() {
           경기가 끝난 후 탭하면 결과를 볼 수 있어요.
         </p>
       )}
+
+      {/* F012: 하단 배너 광고 */}
+      <div className="pt-6">
+        <BannerAd adGroupId={AD_GROUP_IDS.BANNER} />
+      </div>
     </main>
   );
 }

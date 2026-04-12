@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useGameDetail } from "../hooks/useGameDetail";
 import { useShareGame, type ShareStatus } from "../hooks/useShareGame";
+import { useInterstitialAd } from "../hooks/useInterstitialAd";
+import { BannerAd } from "../components/BannerAd";
+import { AD_GROUP_IDS } from "../lib/ad-config";
 import {
   findTeamByRawCode,
   formatGameDate,
@@ -96,13 +99,29 @@ export default function GameDetail() {
   const myTeamCode = user?.team_code ?? null;
 
   const { game, isLoading, error, refetch } = useGameDetail(gameId);
+  const { isReady: isAdReady, showAd } = useInterstitialAd();
+
+  const goHome = () => navigate("/home");
+
+  /** F012: 홈 복귀 시 전면 광고 시도 → 완료/실패 → 홈 이동 */
+  const goHomeWithAd = async () => {
+    if (!isAdReady) {
+      goHome();
+      return;
+    }
+    const shown = await showAd({
+      onCompleted: goHome,
+      onError: goHome,
+    });
+    if (!shown) goHome();
+  };
 
   if (gameId === "") {
     return (
       <EmptyState
         title="경기 정보를 찾을 수 없어요"
         message="잘못된 경로로 접근한 것 같아요. 홈 화면에서 다시 선택해 주세요."
-        onHome={() => navigate("/home")}
+        onHome={goHome}
       />
     );
   }
@@ -116,7 +135,7 @@ export default function GameDetail() {
       <ErrorState
         message={error}
         onRetry={refetch}
-        onHome={() => navigate("/home")}
+        onHome={goHome}
       />
     );
   }
@@ -126,7 +145,7 @@ export default function GameDetail() {
       <EmptyState
         title="경기 정보를 불러오지 못했어요"
         message="잠시 후 다시 시도해 주세요."
-        onHome={() => navigate("/home")}
+        onHome={goHome}
       />
     );
   }
@@ -135,7 +154,8 @@ export default function GameDetail() {
     <GameDetailView
       game={game}
       myTeamCode={myTeamCode}
-      onHome={() => navigate("/home")}
+      onHome={goHome}
+      onHomeWithAd={goHomeWithAd}
     />
   );
 }
@@ -148,9 +168,10 @@ type GameDetailViewProps = {
   game: Game;
   myTeamCode: string | null;
   onHome: () => void;
+  onHomeWithAd: () => void;
 };
 
-function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
+function GameDetailView({ game, myTeamCode, onHome, onHomeWithAd }: GameDetailViewProps) {
   const away = useMemo(() => toTeamView(game.away_team), [game.away_team]);
   const home = useMemo(() => toTeamView(game.home_team), [game.home_team]);
 
@@ -325,7 +346,7 @@ function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
         </button>
         <button
           type="button"
-          onClick={onHome}
+          onClick={onHomeWithAd}
           aria-label="홈으로 이동"
           style={{
             flex: 1,
@@ -352,6 +373,11 @@ function GameDetailView({ game, myTeamCode, onHome }: GameDetailViewProps) {
         >
           홈으로
         </button>
+      </div>
+
+      {/* F012: 하단 배너 광고 */}
+      <div style={{ padding: "16px 20px 0 20px" }}>
+        <BannerAd adGroupId={AD_GROUP_IDS.BANNER} />
       </div>
     </main>
   );
