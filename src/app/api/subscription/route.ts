@@ -63,7 +63,14 @@ export async function PUT(request: NextRequest) {
         success: true,
         user: { id: 'guest', team_code: parsed.data.team_code, subscribed: true },
       })
-      res.cookies.set('guest_team', parsed.data.team_code, { path: '/', maxAge: 60 * 60 * 24 * 30 })
+      // F008: cross-origin(miniapp) 대응 — session_token과 동일한 SameSite/Secure 정책.
+      res.cookies.set('guest_team', parsed.data.team_code, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      })
       return res
     }
 

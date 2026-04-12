@@ -116,9 +116,9 @@
         "kbo_game/src/app/api/* 엔드포인트 CORS 화이트리스트 추가",
         "에러 응답 표준화"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "기존 Next.js API Routes를 REST로 호출 — 하이브리드 아키텍처"
+      "notes": "정적 레이어 완결. kbo_game/src/middleware.ts 신규(CORS 화이트리스트: DEV_ORIGINS + ALLOWED_ORIGINS env, OPTIONS preflight 204, credentials:true, 와일드카드 금지). 쿠키 정책 SameSite: lax→none + secure:true로 전환(auth/login session_token + subscription guest_team). api-client.ts: 네트워크 에러 ApiError(0)로 래핑 + 비-JSON 응답 방어(safeParseJson). miniapp/.env.local 생성(VITE_API_BASE_URL=http://localhost:3000, .gitignore로 제외). 검증: miniapp tsc/lint/test 0 regression, kbo_game typecheck/lint는 사전 상태 유지. 실환경 브라우저 E2E(dev 서버 2개 기동 후 로그인→팀저장→홈→상세→공유)는 F012 출시 직전 또는 수동 검증으로 위임."
     },
     {
       "id": "F009",

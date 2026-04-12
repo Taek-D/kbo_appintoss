@@ -99,6 +99,79 @@
 - 다음 작업: F005 (메인 경기 리스트 화면) — Home.tsx, 오늘 경기 fetch,
   라이브/종료 상태, 경기 상세 네비게이션
 
+### Session 8 — 2026-04-12 (F008 구현 — kbo_game 백엔드 연동 정적 레이어)
+- 조사: kbo_game 루트 next.config.ts 비어있음, src/middleware.ts 없음,
+  6개 API 라우트(/api/auth/login, /api/auth/me, /api/subscription,
+  /api/games/today, /api/games/[id], /api/cron/poll) 모두 CORS 헤더 없음.
+- 조사: kbo_game/src/app/api/auth/login/route.ts의 session_token 쿠키가
+  `sameSite: 'lax'`로 설정되어 있어 cross-origin POST(miniapp Vite dev server)에서
+  쿠키 저장이 차단됨. guest_team(subscription/route.ts)도 동일 이슈.
+- 조사: miniapp/src/lib/api-client.ts는 F003에서 기본 구조만 마련된 상태
+  (credentials:'include', VITE_API_BASE_URL, ApiError, extractErrorMessage).
+  네트워크 실패(fetch 자체 throw) 및 비-JSON 응답(서버 HTML 에러 페이지)에 대한 방어 없음.
+
+- F008 서버 구현 (kbo_game):
+  * kbo_game/src/middleware.ts 신규:
+    - ALLOWED_ORIGINS = DEV_ORIGINS(localhost:5173 / 4173 + 127.0.0.1)
+      + env.ALLOWED_ORIGINS(콤마 구분, 프로덕션 주입용)
+    - matcher: '/api/:path*' — 페이지/정적 자산 제외
+    - OPTIONS 요청: origin 화이트리스트 검증 후 204 + ACA-Origin/Methods/Headers/
+      Credentials/Max-Age, 비허용 origin은 403
+    - 일반 요청: NextResponse.next() 후 ACA-Origin + Credentials + Vary:Origin 덧붙임
+    - 와일드카드('*') 금지 원칙 준수 — credentials:include + 구체적 origin 조합
+  * kbo_game/src/app/api/auth/login/route.ts:
+    - session_token 쿠키 sameSite: 'lax' → 'none' (secure:true 유지)
+    - Chrome/Firefox localhost secure context 예외로 HTTP dev에서도 동작
+  * kbo_game/src/app/api/subscription/route.ts:
+    - guest_team 쿠키에 httpOnly+secure+sameSite:'none' 추가
+      (기존은 path/maxAge만 설정 → cross-origin에서 저장 실패)
+    - session_token과 동일한 보안/SameSite 정책으로 통일
+
+- F008 클라이언트 구현 (miniapp):
+  * src/lib/api-client.ts 보강:
+    - toNetworkError(err): fetch 자체 throw(DNS, CORS 차단, offline)를
+      ApiError(status=0, '네트워크 연결에 실패했어요')로 래핑
+    - safeParseJson(text): JSON.parse try/catch로 감싸 비-JSON 응답 시 null 반환
+      (서버가 HTML 에러 페이지를 돌려주는 케이스 방어)
+    - apiFetch: fetch → toNetworkError 캐치, res.text() → safeParseJson, 이후 로직 동일
+    - ApiError JSDoc에 status=0/>=400 의미 명시
+  * miniapp/.env.local 신규:
+    - VITE_API_BASE_URL=http://localhost:3000
+    - 루트 .gitignore의 `.env*` + `!.env.example` 규칙으로 커밋 제외 확인
+
+- 아키텍처 주의점 (재확인):
+  * miniapp(Vite, origin A) ↔ kbo_game(Next.js, origin B) 하이브리드 구조
+  * 토스 OAuth 토큰은 서버에서만 취급, 클라이언트에는 세션 쿠키만
+  * credentials:'include' + ACA-Origin 와일드카드 금지 — 브라우저가 거부
+  * SameSite=None 쿠키는 반드시 Secure 동반 (HTTPS 프로덕션 필수)
+  * 개발 환경(localhost)은 Chrome/Firefox secure context 예외로 HTTP에서도 동작
+
+- 검증 결과 (F001~F008 정적 레이어):
+  * miniapp tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  * miniapp pnpm lint: 0 errors, 8 warnings (Session 3.5와 동일 — regression 0)
+  * miniapp pnpm test --run: 1 passed (템플릿 example test, regression 0)
+  * kbo_game pnpm typecheck: 427 errors — **전부** miniapp/apps-in-toss-examples-robin/**
+    + .claude/skills/**/scripts/*.js + miniapp 템플릿 파일의 사전 상태
+    (F008 수정 파일 src/middleware.ts / src/app/api/auth/login/route.ts /
+    src/app/api/subscription/route.ts / miniapp/src/lib/api-client.ts는 에러 0건)
+  * kbo_game pnpm lint: exit 1 — 동일한 사전 상태(require() import 금지 규칙 위반)
+    F008 수정 파일은 어디에도 없음 → regression 0 확인
+  * pre-F008 상태 비교(git stash): typecheck 427 errors로 동일 — 내 변경 기여 0
+
+- 실환경 E2E 검증 (위임):
+  * 브라우저 E2E(dev 서버 2개 기동: kbo_game 3000 + miniapp 5173,
+    로그인 → 팀 저장 → 홈 → 상세 → 공유 플로우)는 이번 세션에서는 미수행.
+  * F008 정적 레이어는 완결했으나 실제 CORS 동작은 브라우저에서만 검증 가능.
+  * 프로덕션 도메인은 ALLOWED_ORIGINS env로 Vercel에 주입해야 함(배포 시 F012에서).
+  * 실환경 검증은 수동 또는 F012 출시 직전 최종 체크리스트에서 수행.
+
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  (순수 서버 CORS + 클라이언트 API 래퍼 보강).
+
+- 다음 작업: F009 (NavigationBar 통합) — with-navigation-bar 예제 참조,
+  useNavigationBar / NavigationBar 설정, 첫 화면 뒤로가기=앱 종료 검증,
+  커스텀 헤더/백버튼 전면 금지 규칙 최종 확인.
+
 ### Session 7 — 2026-04-12 (F007 구현)
 - 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
   - useShareLink 훅: isTossApp() 분기 → Dynamic import `getTossShareLink(url, ogImageUrl?)`

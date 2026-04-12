@@ -48,10 +48,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // F008: cross-origin(miniapp Vite dev server) 쿠키 전송을 위해 SameSite=None + Secure.
+    // Chrome/Firefox는 localhost를 secure context로 간주하므로 HTTP dev에서도 동작한다.
     response.cookies.set('session_token', authResponse.accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 3600,
       path: '/',
     })
