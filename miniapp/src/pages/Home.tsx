@@ -240,7 +240,7 @@ function Skeleton() {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, toggleSubscription, isTogglingSubscription, toggleSubscriptionError } = useAuth();
   const { games, isLoading, error, refetch } = useTodayGames();
 
   const myTeamCode = user?.team_code ?? null;
@@ -292,6 +292,62 @@ export default function Home() {
           </h1>
         )}
       </section>
+
+      {/* F011: 알림 구독 토글 카드 */}
+      {user !== null && user.team_code !== null && (
+        <section
+          className="mb-4 flex items-center justify-between rounded-2xl px-4 py-3"
+          style={{ background: SURFACE_ELEVATED }}
+        >
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[18px]"
+              style={{ background: user.subscribed ? LIVE_BG : "#F2F4F6" }}
+              aria-hidden="true"
+            >
+              {user.subscribed ? "🔔" : "🔕"}
+            </span>
+            <div>
+              <p className="text-[14px] font-semibold" style={{ color: TEXT_STRONG }}>
+                경기 종료 알림
+              </p>
+              <p className="text-[12px]" style={{ color: user.subscribed ? LIVE_COLOR : TEXT_WEAK }}>
+                {user.subscribed ? "알림을 받고 있어요" : "알림이 꺼져 있어요"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => toggleSubscription(!user.subscribed)}
+            disabled={isTogglingSubscription}
+            className="rounded-lg px-3 py-1.5 text-[13px] font-semibold"
+            style={{
+              background: user.subscribed ? "#F2F4F6" : BRAND_COLOR,
+              color: user.subscribed ? TEXT_MEDIUM : "#FFFFFF",
+              opacity: isTogglingSubscription ? 0.6 : 1,
+            }}
+          >
+            {isTogglingSubscription ? "처리 중…" : user.subscribed ? "끄기" : "켜기"}
+          </button>
+        </section>
+      )}
+      {toggleSubscriptionError !== null && (
+        <p
+          className="mb-4 text-center text-[13px]"
+          style={{ color: ERROR_COLOR }}
+          role="alert"
+        >
+          {toggleSubscriptionError}
+        </p>
+      )}
+      {user !== null && user.team_code !== null && !user.subscribed && (
+        <p
+          className="mb-4 text-center text-[12px]"
+          style={{ color: TEXT_WEAK }}
+        >
+          알림을 끄면 경기 종료 소식을 놓칠 수 있어요
+        </p>
+      )}
 
       {/* 본문: 로딩 / 에러 / 빈 상태 / 경기 목록 */}
       <section className="flex flex-1 flex-col gap-6">

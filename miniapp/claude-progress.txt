@@ -264,6 +264,37 @@
   - brand.icon 600×600 로고 에셋 → 출시 직전 에셋 패스
 - 다음 작업: F011 (권한 처리 — 알림) — Toss permission 바텀싯, 알림 권한 요청/거부 대응 UI.
 
+### Session 11 — 2026-04-12 (F011 구현)
+- 조사: robin with-permission 예제 파악
+  - SDK API: getPermission(type) + openPermissionDialog(type)
+  - 지원 타입: camera | location | contacts — **notification 타입 없음**
+- 분석: CLAUDE.md 권한 규칙은 CONDITIONAL("해당 기능 구현 시")
+  - 앱이 카메라/위치/연락처 미사용 → Toss permission 바텀싯 대상 없음
+  - Push 알림은 서버 측 Toss Push API(mTLS)로 처리 → 클라이언트 OS 권한 불필요
+  - 대신 알림 구독 설정 UI로 범위 조정 (사용자 승인)
+- F011 구현:
+  1. useAuth.ts 확장:
+     - deleteSubscription() 함수 추가 (DELETE /api/subscription → subscribed=false)
+     - unsubscribeMutation 추가
+     - toggleSubscription(subscribe: boolean) 콜백 추가
+       - true → 현재 team_code로 PUT (re-subscribe)
+       - false → DELETE (unsubscribe)
+     - isTogglingSubscription, toggleSubscriptionError 노출
+  2. Home.tsx에 알림 토글 카드 추가:
+     - user.team_code !== null일 때만 표시
+     - 구독 상태별 아이콘(🔔/🔕) + 설명 텍스트
+     - 토글 버튼(켜기/끄기) + 처리 중 상태
+     - 구독 해제 시 가이드: "알림을 끄면 경기 종료 소식을 놓칠 수 있어요"
+     - 에러 인라인 표시 (alert 금지 규칙 준수)
+- 검증 결과 (F001~F011):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (regression 0)
+  - pnpm test --run: 1 passed (regression 0)
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  (알림 구독은 순수 서버 API + React Query mutation)
+- 다음 작업: F012 (최종 규칙 검증 및 출시 체크리스트)
+  — /harness-validate 전체 스캔, /appintoss-nongame-launch-checklist 11단계.
+
 ### Session 7 — 2026-04-12 (F007 구현)
 - 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
   - useShareLink 훅: isTossApp() 분기 → Dynamic import `getTossShareLink(url, ogImageUrl?)`

@@ -157,9 +157,9 @@
         "실제 요청할 권한만 표시",
         "거부 시 재요청/가이드"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": "with-permission",
-      "notes": "알림 권한 거부 대응 UI 필수"
+      "notes": "앱이 카메라/위치/연락처를 사용하지 않아 Toss permission 바텀싯 대상 없음(CONDITIONAL 규칙). 대신 알림 구독 토글 UI 구현: useAuth에 toggleSubscription(DELETE /api/subscription) 추가, Home에 알림 토글 카드(구독 on/off + 가이드 메시지 + 에러 인라인). 서버 subscribed 필드와 연동."
     },
     {
       "id": "F012",

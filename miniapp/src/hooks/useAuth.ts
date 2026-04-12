@@ -60,6 +60,13 @@ async function putSubscription(teamCode: TeamCode): Promise<AuthUser> {
   return user;
 }
 
+async function deleteSubscription(): Promise<AuthUser> {
+  const { user } = await apiFetch<SubscriptionResponse>("/api/subscription", {
+    method: "DELETE",
+  });
+  return user;
+}
+
 /**
  * F003: 토스 로그인 훅.
  *
@@ -110,6 +117,17 @@ export function useAuth() {
     },
   });
 
+  /**
+   * F011: 알림 구독 해제 — DELETE /api/subscription.
+   * 성공 시 user.subscribed=false로 캐시 갱신.
+   */
+  const unsubscribeMutation = useMutation({
+    mutationFn: deleteSubscription,
+    onSuccess: (user) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+    },
+  });
+
   const logout = useCallback(() => {
     // TODO(F003-followup): 서버 측 logout 엔드포인트 호출 (쿠키 제거)
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
@@ -132,6 +150,28 @@ export function useAuth() {
     selectTeamMutation.error instanceof Error
       ? selectTeamMutation.error.message
       : null;
+  const toggleSubscriptionError =
+    unsubscribeMutation.error instanceof Error
+      ? unsubscribeMutation.error.message
+      : selectTeamError;
+
+  /**
+   * F011: 알림 구독 토글.
+   * subscribe=true → 현재 팀으로 PUT (subscribed=true)
+   * subscribe=false → DELETE (subscribed=false)
+   */
+  const toggleSubscription = useCallback(
+    async (subscribe: boolean) => {
+      if (subscribe) {
+        if (!user?.team_code)
+          throw new Error("응원팀을 먼저 선택해 주세요");
+        await selectTeamMutation.mutateAsync(user.team_code as TeamCode);
+      } else {
+        await unsubscribeMutation.mutateAsync();
+      }
+    },
+    [user, selectTeamMutation, unsubscribeMutation],
+  );
 
   return {
     user,
@@ -144,5 +184,9 @@ export function useAuth() {
     selectTeam: selectTeamMutation.mutateAsync,
     isSelectingTeam: selectTeamMutation.isPending,
     selectTeamError,
+    toggleSubscription,
+    isTogglingSubscription:
+      unsubscribeMutation.isPending || selectTeamMutation.isPending,
+    toggleSubscriptionError,
   };
 }
