@@ -88,9 +88,9 @@
         "과도한 blinking/애니메이션 지양",
         "스코어보드, 하이라이트 요약"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "kbo_game/src/components/summary 포팅 대상"
+      "notes": "클라이언트 레이어 완결. miniapp에 gsap/@gsap/react/lenis 미설치 + 심사 규칙(과도한 blinking 지양)에 맞춰 count-up 애니메이션은 생략하고 CSS @keyframes 페이드인만 적용(prefers-reduced-motion 존중). src/lib/games.ts에 InningScore 타입 + parseInningData + formatGameDate 추가(서버 types/game.ts parseInningData와 동일 규약). useGameDetail 훅(React Query, staleTime 5분, retry:false, gameId 빈 문자열 disabled). GameDetail.tsx 본 구현: 상태 라벨/헤더, 응원팀 승/패/무 배너, 스코어보드 카드(emoji + shortName + BRAND_COLOR 승리 강조), 9이닝 테이블(overflow-x-auto는 상세 화면 내부만 — 홈 화면 수평 스크롤 금지 규칙은 /home만 해당), 경기 시작/종료 시간 카드, '홈으로' CTA 1개(커스텀 백버튼 금지). 로딩 스켈레톤 + 에러 인라인(재시도/홈으로) + 빈 상태 모두 포함. Intro/TeamSelect/Home과 동일한 인라인 + KOREAN_STACK 패턴 유지. TDS 교체는 F010, NavigationBar는 F009, 공유는 F007, 서버 E2E(CORS)는 F008로 위임."
     },
     {
       "id": "F007",

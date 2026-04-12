@@ -99,6 +99,54 @@
 - 다음 작업: F005 (메인 경기 리스트 화면) — Home.tsx, 오늘 경기 fetch,
   라이브/종료 상태, 경기 상세 네비게이션
 
+### Session 6 — 2026-04-12 (F006 구현)
+- 조사: kbo_game/src/components의 ScoreBoard / InningTable / GameCard 원본 파악
+  - ScoreBoard: gsap + @gsap/react로 스코어 count-up (textContent 스냅),
+    prefers-reduced-motion 체크, 응원팀 승리 시 그라데이션 배너
+  - InningTable: 9이닝 + R, 원정 상단/홈 하단, overflow-x-auto
+  - 두 컴포넌트 모두 KBO_TEAMS.logo(next/image)로 이미지 표시 — miniapp에는 로고 없음
+- 조사: miniapp/package.json
+  - gsap / @gsap/react / lenis 미설치
+  - framer-motion 12.35.1 / tw-animate-css 1.4.0 설치됨
+  - 결정: 추가 의존성 없이 CSS @keyframes로만 진입 fadeIn + 스켈레톤 펄스 구현
+  - 이유: ① 번들 경량화 ② 심사 규칙 "과도한 blinking/애니메이션 지양"
+- F006 클라이언트 구현 (서버 변경 없음):
+  - src/lib/games.ts 확장:
+    * InningScore 타입 (inning/home/away)
+    * parseInningData(raw) — kbo_game/src/types/game.ts의 parseInningData와 동일 규약
+      (unknown + 타입 가드, innings 키 누락/형식 불일치 → 빈 배열)
+    * formatGameDate(gameDate) — "YYYY-MM-DD" → "M월 D일 (요일)" Intl Asia/Seoul
+  - src/hooks/useGameDetail.ts:
+    * React Query useQuery, queryKey=['games','detail',gameId]
+    * staleTime 5분, retry:false, gameId==='' 이면 enabled:false
+    * game/isLoading/error/refetch 노출
+  - src/pages/GameDetail.tsx 본 구현 (placeholder 전면 교체):
+    * 상태 분기: gameId 없음 / loading(skeleton) / error(재시도+홈) / game null / 정상
+    * 상단: 상태 라벨(경기 종료/취소/중/예정) + 경기 날짜 h1 — 커스텀 헤더 아님
+    * 응원팀 참여 경기면 승리/패배/무승부 배너(isMyTeamWin/Lose/Draw)
+    * ScoreBoardCard: 1fr | auto | 1fr grid, away/home TeamPillar(emoji+shortName+"내 팀"),
+      ScoreNumber(승리=BRAND_COLOR, 패배=TEXT_WEAK, 무=STRONG), 응원팀 "내 팀" 필 뱃지
+    * InningTableCard: 9이닝 + R, away 상단/home 하단, 빈 경우 "정리되지 않았어요" 안내
+      overflow-x: auto는 이닝 테이블 내부에만 (루트 main은 overflow-x: hidden)
+    * TimingCard: 경기 시작/종료 시간 (startedAt/finishedAt formatGameTime 재사용)
+    * "홈으로" CTA 1개 (커스텀 백버튼 금지 — NavigationBar는 F009)
+    * PageStyles: @keyframes kbo-fade-in + kbo-skeleton,
+      @media (prefers-reduced-motion: reduce) 시 전부 none
+    * 인라인 + KOREAN_STACK + BRAND_COLOR 패턴 유지 (Intro/TeamSelect/Home과 동일)
+  - src/App.tsx: /game/:id는 이미 F005에서 라우트 확보 → 변경 없음
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  - F006은 순수 서버 API 호출 + UI 렌더링
+- 수평 스크롤 정책 주의:
+  - NEVER 규칙은 "홈 화면(/home) 의도하지 않은 수평 스크롤"을 금지함
+  - 경기 상세의 이닝 테이블은 의도된 좁은 폰 대응 → 허용
+  - 루트 <main>은 overflow-x: hidden으로 전체 페이지 가로 스크롤은 차단
+- 검증 결과 (F001~F006):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (전부 Session 3.5와 동일한 템플릿/robin 경고 — regression 0)
+  - pnpm test --run: 1 passed (템플릿 example test, regression 없음)
+- 다음 작업: F007 (경기 결과 공유) — getTossShareLink() + share API,
+  with-share-link 예제 참조, 공유 결과 화면 정상 렌더 확인, 자사 웹사이트 링크 금지
+
 ### Session 5 — 2026-04-12 (F005 구현)
 - 조사: 상위 kbo_game에 /api/games/today, /api/games/[id] 엔드포인트 완비
   - GET /api/games/today → { games: Game[] } (Asia/Seoul 오늘 날짜 기준, started_at ASC)
@@ -175,6 +223,10 @@
 - F005-followup: pull-to-refresh 또는 상단 리프레시 버튼 (toss 패턴) — F010 TDS 패스에서 검토
 - F005-followup: Index.tsx(템플릿 landing) 파일 삭제 여부 결정 — 현재 import 제거만 했음
 - F005-followup: 서버 text 컬럼 home_team/away_team에 미등록 코드가 올 경우 UI fallback 실제 케이스 검증 (F008 CORS 연동 후)
+- F006-followup: 공식 로고 이미지 교체 시 ScoreBoardCard TeamPillar의 emoji 원형을 <img>로 교체 (F010 또는 별도 assets 패스)
+- F006-followup: 공유 CTA를 경기 상세 하단에 추가 → F007 (with-share-link)
+- F006-followup: count-up 스코어 애니메이션 필요 여부 UX 검토 — 현재는 심사 규칙상 생략. 심사 통과 후 재검토.
+- F006-followup: 이닝 테이블을 TDS Table 컴포넌트로 치환 → F010
 
 ## 별도 이슈 (btw — 심사 직전 검토)
 - 서버 session_token에 토스 accessToken 직접 저장 → 앱 자체 JWT 발급 구조로 리팩토링

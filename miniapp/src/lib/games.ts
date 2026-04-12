@@ -36,6 +36,19 @@ export type Game = {
   finished_at: string | null;
 };
 
+/**
+ * 이닝별 점수 (F006).
+ *
+ * 서버 inning_data JSONB가 { innings: [...] } 모양으로 저장되며,
+ * 현재 game-repository는 null로 upsert할 수 있으므로 null 가능성이 항상 있다.
+ * parseInningData()로 안전 파싱 후 사용하라.
+ */
+export type InningScore = {
+  inning: number;
+  home: number;
+  away: number;
+};
+
 type TodayGamesResponse = { games: Game[] };
 type GameDetailResponse = { game: Game };
 
@@ -93,4 +106,49 @@ export function formatGameTime(startedAt: string | null): string {
  */
 export function isGameDetailAvailable(game: Game): boolean {
   return game.status === "finished";
+}
+
+/**
+ * inning_data JSONB → InningScore[] 안전 파서 (F006).
+ *
+ * 서버 저장 구조: { innings: [{ inning, home, away }, ...] }
+ * null/형식 불일치/부분 누락 시 전부 빈 배열로 graceful fallback.
+ * any 금지 (CLAUDE.md) → unknown + 타입 가드.
+ *
+ * kbo_game/src/types/game.ts의 parseInningData와 동일 규약.
+ */
+export function parseInningData(
+  raw: Record<string, unknown> | null,
+): InningScore[] {
+  if (raw === null) return [];
+  const innings = raw["innings"];
+  if (!Array.isArray(innings)) return [];
+  return innings
+    .filter(
+      (item: unknown): item is { inning: number; home: number; away: number } => {
+        if (typeof item !== "object" || item === null) return false;
+        const obj = item as Record<string, unknown>;
+        return (
+          typeof obj["inning"] === "number" &&
+          typeof obj["home"] === "number" &&
+          typeof obj["away"] === "number"
+        );
+      },
+    )
+    .map(({ inning, home, away }) => ({ inning, home, away }));
+}
+
+/**
+ * "YYYY-MM-DD" → "M월 D일 (요일)" (Asia/Seoul 기준).
+ * 경기 상세 헤더에 표시한다. 잘못된 값이면 원본 그대로 반환.
+ */
+export function formatGameDate(gameDate: string): string {
+  const date = new Date(`${gameDate}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) return gameDate;
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "Asia/Seoul",
+  }).format(date);
 }
