@@ -50,22 +50,26 @@ export function middleware(request: NextRequest) {
   const origin = request.headers.get('origin')
   const allowed = resolveAllowedOrigin(origin)
 
+  // Origin "null"(토스 WebView)에서는 credentials 플래그 비활성
+  // WebKit이 Allow-Credentials: true + Allow-Origin: null 조합을 차단하므로
+  const useCredentials = allowed !== null && allowed !== 'null'
+
   // Preflight (CORS OPTIONS)
   if (request.method === 'OPTIONS') {
     if (allowed === null) {
       return new NextResponse(null, { status: 403 })
     }
-    return new NextResponse(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': allowed,
-        'Access-Control-Allow-Methods': ALLOWED_METHODS,
-        'Access-Control-Allow-Headers': ALLOWED_HEADERS,
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Max-Age': '86400',
-        Vary: 'Origin',
-      },
-    })
+    const preflightHeaders: Record<string, string> = {
+      'Access-Control-Allow-Origin': allowed,
+      'Access-Control-Allow-Methods': ALLOWED_METHODS,
+      'Access-Control-Allow-Headers': ALLOWED_HEADERS,
+      'Access-Control-Max-Age': '86400',
+      Vary: 'Origin',
+    }
+    if (useCredentials) {
+      preflightHeaders['Access-Control-Allow-Credentials'] = 'true'
+    }
+    return new NextResponse(null, { status: 204, headers: preflightHeaders })
   }
 
   // 일반 요청: 라우트 핸들러 실행 + 응답에 CORS 헤더 덧붙이기
@@ -73,7 +77,9 @@ export function middleware(request: NextRequest) {
 
   if (allowed !== null) {
     response.headers.set('Access-Control-Allow-Origin', allowed)
-    response.headers.set('Access-Control-Allow-Credentials', 'true')
+    if (useCredentials) {
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+    }
     response.headers.append('Vary', 'Origin')
   }
 
