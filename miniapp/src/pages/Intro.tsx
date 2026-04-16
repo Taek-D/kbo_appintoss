@@ -6,6 +6,7 @@ import {
   TEXT_MEDIUM,
   TEXT_WEAK,
   ERROR_COLOR,
+  SURFACE,
   KOREAN_STACK,
 } from "../lib/design-tokens";
 
@@ -45,8 +46,8 @@ export default function Intro() {
 
   return (
     <main
-      className="flex min-h-dvh flex-col items-center justify-between px-6 pt-20 pb-10"
-      style={{ background: "#FFFFFF", color: TEXT_STRONG }}
+      className="flex min-h-dvh flex-col items-center justify-between px-6 pt-20"
+      style={{ background: SURFACE, color: TEXT_STRONG, paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 40px)" }}
     >
       {/* 브랜드 영역 */}
       <section className="flex flex-1 flex-col items-center justify-center gap-7 text-center">
@@ -95,11 +96,11 @@ export default function Intro() {
           type="button"
           onClick={handleStart}
           disabled={isLoading}
-          className="w-full rounded-2xl px-6 py-4 text-[16px] font-semibold text-white transition-opacity active:opacity-80 disabled:opacity-60"
+          className="w-full rounded-2xl px-6 py-4 text-[16px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-60"
           style={{ background: BRAND_COLOR, fontFamily: KOREAN_STACK }}
           aria-label="KBO 야구 알리미 시작하기"
         >
-          {isLoading ? "로그인 중..." : "시작하기"}
+          {isLoading ? "로그인 중\u2026" : "시작하기"}
         </button>
         <p
           className="text-center text-[12px]"

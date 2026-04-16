@@ -23,9 +23,12 @@ import {
   TEXT_WEAK,
   BORDER_WEAK,
   SURFACE_ELEVATED,
+  SURFACE,
   ERROR_COLOR,
+  ERROR_SOFT,
   SUCCESS_COLOR,
   SUCCESS_SOFT,
+  grey100,
   KOREAN_STACK,
 } from "../lib/design-tokens";
 
@@ -230,7 +233,6 @@ function GameDetailView({ game, myTeamCode, onHome, onHomeWithAd }: GameDetailVi
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)",
       }}
     >
-      <PageStyles />
 
       <section
         style={{
@@ -271,7 +273,7 @@ function GameDetailView({ game, myTeamCode, onHome, onHomeWithAd }: GameDetailVi
             background: isMyTeamWin
               ? SUCCESS_SOFT
               : isMyTeamLose
-                ? "#FFEFEF"
+                ? ERROR_SOFT
                 : BRAND_SOFT,
             color: isMyTeamWin
               ? SUCCESS_COLOR
@@ -327,27 +329,27 @@ function GameDetailView({ game, myTeamCode, onHome, onHomeWithAd }: GameDetailVi
           }}
           disabled={isSharing}
           aria-label="경기 결과 공유하기"
+          className="transition-transform active:scale-[0.98] disabled:opacity-70"
           style={{
             flex: 1,
             padding: "16px 20px",
             borderRadius: 16,
             border: `1px solid ${BORDER_WEAK}`,
-            background: "#FFFFFF",
+            background: SURFACE,
             color: isSharing ? TEXT_WEAK : BRAND_COLOR,
             fontFamily: KOREAN_STACK,
             fontSize: 15,
             fontWeight: 700,
             cursor: isSharing ? "default" : "pointer",
-            opacity: isSharing ? 0.7 : 1,
-            transition: "opacity 120ms ease-out",
           }}
         >
-          {isSharing ? "공유 중..." : "공유하기"}
+          {isSharing ? "공유 중\u2026" : "공유하기"}
         </button>
         <button
           type="button"
           onClick={onHomeWithAd}
           aria-label="홈으로 이동"
+          className="transition-transform active:scale-[0.98]"
           style={{
             flex: 1,
             padding: "16px 20px",
@@ -359,16 +361,6 @@ function GameDetailView({ game, myTeamCode, onHome, onHomeWithAd }: GameDetailVi
             fontSize: 15,
             fontWeight: 700,
             cursor: "pointer",
-            transition: "opacity 120ms ease-out",
-          }}
-          onPointerDown={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.opacity = "0.85";
-          }}
-          onPointerUp={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.opacity = "1";
-          }}
-          onPointerLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.opacity = "1";
           }}
         >
           홈으로
@@ -415,7 +407,7 @@ function ShareFeedback({ status }: ShareFeedbackProps) {
         margin: "12px 20px 0 20px",
         padding: "12px 16px",
         borderRadius: 12,
-        background: isError ? "#FFEFEF" : BRAND_SOFT,
+        background: isError ? ERROR_SOFT : BRAND_SOFT,
         color: isError ? ERROR_COLOR : BRAND_COLOR,
         fontSize: 13,
         fontWeight: 600,
@@ -478,7 +470,7 @@ function ScoreBoardCard({
       style={{
         margin: "4px 20px 12px 20px",
         padding: "24px 20px",
-        background: "#FFFFFF",
+        background: SURFACE,
         borderRadius: 18,
         border: `1px solid ${BORDER_WEAK}`,
         display: "grid",
@@ -646,7 +638,7 @@ function InningTableCard({ innings, away, home }: InningTableCardProps) {
         style={{
           margin: "0 20px 12px 20px",
           padding: "20px",
-          background: "#FFFFFF",
+          background: SURFACE,
           borderRadius: 16,
           border: `1px solid ${BORDER_WEAK}`,
           textAlign: "center",
@@ -664,7 +656,7 @@ function InningTableCard({ innings, away, home }: InningTableCardProps) {
     <section
       style={{
         margin: "0 20px 12px 20px",
-        background: "#FFFFFF",
+        background: SURFACE,
         borderRadius: 16,
         border: `1px solid ${BORDER_WEAK}`,
         overflow: "hidden",
@@ -815,7 +807,7 @@ function TimingCard({ startedAt, finishedAt }: TimingCardProps) {
       style={{
         margin: "0 20px 12px 20px",
         padding: "16px 20px",
-        background: "#FFFFFF",
+        background: SURFACE,
         borderRadius: 16,
         border: `1px solid ${BORDER_WEAK}`,
         display: "flex",
@@ -870,7 +862,6 @@ function LoadingState() {
         padding: "24px 20px",
       }}
     >
-      <PageStyles />
 
       <div
         style={{
@@ -897,7 +888,7 @@ function skeletonStyle(height: number, width: number): React.CSSProperties {
     height,
     width,
     borderRadius: 8,
-    background: "#EDF1F5",
+    background: grey100,
     animation: "kbo-skeleton 1.4s ease-in-out infinite",
   };
 }
@@ -907,7 +898,7 @@ function skeletonCardStyle(height: number): React.CSSProperties {
     height,
     width: "100%",
     borderRadius: 16,
-    background: "#EDF1F5",
+    background: grey100,
     animation: "kbo-skeleton 1.4s ease-in-out infinite",
   };
 }
@@ -931,14 +922,13 @@ function ErrorState({ message, onRetry, onHome }: ErrorStateProps) {
         flexDirection: "column",
       }}
     >
-      <PageStyles />
 
       <section
         role="alert"
         style={{
           marginTop: 32,
           padding: "24px 20px",
-          background: "#FFFFFF",
+          background: SURFACE,
           borderRadius: 16,
           border: `1px solid ${BORDER_WEAK}`,
           display: "flex",
@@ -981,7 +971,7 @@ function ErrorState({ message, onRetry, onHome }: ErrorStateProps) {
               padding: "14px 16px",
               borderRadius: 12,
               border: `1px solid ${BORDER_WEAK}`,
-              background: "#FFFFFF",
+              background: SURFACE,
               color: TEXT_STRONG,
               fontFamily: KOREAN_STACK,
               fontSize: 14,
@@ -1038,7 +1028,6 @@ function EmptyState({ title, message, onHome }: EmptyStateProps) {
         textAlign: "center",
       }}
     >
-      <PageStyles />
 
       <span style={{ fontSize: 44 }} aria-hidden="true">
         ⚾
@@ -1081,28 +1070,4 @@ function EmptyState({ title, message, onHome }: EmptyStateProps) {
 // 페이지 레벨 스타일 (CSS 키프레임)
 // ─────────────────────────────────────────────────────────────
 
-/**
- * 진입 애니메이션 + 스켈레톤 펄스.
- * prefers-reduced-motion: reduce 시 모든 애니메이션을 비활성화하여
- * 접근성 + 심사 규칙("과도한 blinking/애니메이션 지양") 모두 만족.
- */
-function PageStyles() {
-  return (
-    <style>{`
-      @keyframes kbo-fade-in {
-        from { opacity: 0; transform: translateY(6px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes kbo-skeleton {
-        0%, 100% { opacity: 1; }
-        50%      { opacity: 0.55; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        [style*="kbo-fade-in"],
-        [style*="kbo-skeleton"] {
-          animation: none !important;
-        }
-      }
-    `}</style>
-  );
-}
+/* 키프레임(kbo-fade-in, kbo-skeleton)과 reduced-motion 처리는 index.css로 이전 */

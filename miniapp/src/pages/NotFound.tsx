@@ -33,7 +33,7 @@ export default function NotFound() {
       <button
         type="button"
         onClick={() => navigate("/home")}
-        className="mt-2 rounded-2xl px-8 py-3.5 text-[15px] font-semibold text-white"
+        className="mt-2 rounded-2xl px-8 py-3.5 text-[15px] font-semibold text-white transition-transform active:scale-[0.98]"
         style={{ background: BRAND_COLOR }}
       >
         홈으로 돌아가기

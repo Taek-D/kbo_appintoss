@@ -28,18 +28,15 @@ export async function requestTossAppLogin(): Promise<TossAuthResult> {
     };
   }
 
-  const mod = (await import("@apps-in-toss/web-framework")) as unknown as {
-    appLogin?: {
-      (): Promise<TossAuthResult>;
-      isSupported?: () => boolean;
-    };
+  const { appLogin } = (await import("@apps-in-toss/web-framework")) as unknown as {
+    appLogin: () => Promise<TossAuthResult>;
   };
 
-  if (!mod.appLogin || mod.appLogin.isSupported?.() !== true) {
+  if (!appLogin) {
     throw new Error("appLogin SDK를 사용할 수 없는 환경입니다");
   }
 
-  return mod.appLogin();
+  return appLogin();
 }
 
 /**

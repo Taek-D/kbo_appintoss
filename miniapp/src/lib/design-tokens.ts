@@ -54,7 +54,7 @@ export const LIVE_BG = green50;
 
 export const BORDER_WEAK = grey200;
 
-export const ERROR_COLOR = "#F04452"; // 프로젝트 전용 에러 컬러 (TDS red500 #FF3333과 근사)
+export const ERROR_COLOR = "#FF3333"; // TDS red500
 export const ERROR_SOFT = red50;
 
 export const SUCCESS_COLOR = green500;

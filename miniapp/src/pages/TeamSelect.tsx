@@ -9,6 +9,7 @@ import {
   TEXT_WEAK,
   BORDER_WEAK,
   SURFACE_ELEVATED,
+  SURFACE,
   ERROR_COLOR,
   KOREAN_STACK,
 } from "../lib/design-tokens";
@@ -51,7 +52,7 @@ function TeamCard({ team, selected, disabled, onSelect }: TeamCardProps) {
       onClick={() => {
         onSelect(team.code);
       }}
-      className="flex flex-col items-center justify-center gap-2 rounded-2xl px-3 py-5 transition-all active:scale-[0.98] disabled:opacity-60"
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl px-3 py-5 transition-transform active:scale-[0.98] motion-reduce:transform-none disabled:opacity-60"
       style={{
         background: selected ? team.color : SURFACE_ELEVATED,
         border: `1.5px solid ${selected ? team.color : BORDER_WEAK}`,
@@ -104,8 +105,8 @@ export default function TeamSelect() {
 
   return (
     <main
-      className="flex min-h-dvh flex-col px-5 pt-10 pb-6"
-      style={{ background: "#FFFFFF", color: TEXT_STRONG }}
+      className="flex min-h-dvh flex-col px-5 pt-10"
+      style={{ background: SURFACE, color: TEXT_STRONG, paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 24px)" }}
     >
       {/* 타이틀 영역 — 자체 헤더가 아니라 본문 컨텐츠 (NavigationBar는 F009에서 추가) */}
       <section className="flex flex-col gap-2 pb-6">
@@ -156,7 +157,7 @@ export default function TeamSelect() {
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="w-full rounded-2xl px-6 py-4 text-[16px] font-semibold text-white transition-opacity active:opacity-80 disabled:opacity-40"
+          className="w-full rounded-2xl px-6 py-4 text-[16px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-40"
           style={{
             background: selectedTeam?.color ?? BRAND_COLOR,
             fontFamily: KOREAN_STACK,
@@ -168,7 +169,7 @@ export default function TeamSelect() {
           }
         >
           {isSelectingTeam
-            ? "저장 중..."
+            ? "저장 중\u2026"
             : selectedTeam === null
               ? "응원팀을 선택해주세요"
               : `${selectedTeam.shortName} 응원팀으로 저장하기`}

@@ -12,6 +12,7 @@ import {
   type Game,
 } from "../lib/games";
 import { findTeam, isTeamCode } from "../lib/teams";
+import { Switch } from "@/components/ui/switch";
 import {
   BRAND_COLOR,
   TEXT_STRONG,
@@ -19,9 +20,11 @@ import {
   TEXT_WEAK,
   BORDER_WEAK,
   SURFACE_ELEVATED,
+  SURFACE,
   ERROR_COLOR,
   LIVE_COLOR,
   LIVE_BG,
+  grey100,
   KOREAN_STACK,
 } from "../lib/design-tokens";
 
@@ -101,9 +104,9 @@ function GameRow({ game, myTeamCode, onNavigate }: GameRowProps) {
       onClick={handleClick}
       disabled={!clickable}
       aria-label={ariaLabel}
-      className="flex w-full flex-col gap-3 rounded-2xl px-4 py-4 text-left transition-colors active:bg-[#F2F4F6] disabled:active:bg-transparent"
+      className="flex w-full flex-col gap-3 rounded-2xl px-4 py-4 text-left transition-colors active:bg-secondary disabled:active:bg-transparent"
       style={{
-        background: "#FFFFFF",
+        background: SURFACE,
         border: `1.5px solid ${isMine ? BRAND_COLOR : BORDER_WEAK}`,
         boxShadow: isMine ? `0 6px 16px ${BRAND_COLOR}1A` : "none",
         fontFamily: KOREAN_STACK,
@@ -119,7 +122,7 @@ function GameRow({ game, myTeamCode, onNavigate }: GameRowProps) {
           >
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full animate-[pulse_2s_ease-in-out_infinite]"
+              className="h-1.5 w-1.5 rounded-full animate-[pulse_2s_ease-in-out_infinite] motion-reduce:animate-none"
               style={{ background: LIVE_COLOR }}
             />
             경기 중
@@ -127,7 +130,7 @@ function GameRow({ game, myTeamCode, onNavigate }: GameRowProps) {
         ) : game.status === "cancelled" ? (
           <span
             className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-            style={{ background: "#F2F4F6", color: TEXT_WEAK }}
+            style={{ background: grey100, color: TEXT_WEAK }}
           >
             취소
           </span>
@@ -272,8 +275,8 @@ export default function Home() {
 
   return (
     <main
-      className="flex min-h-dvh flex-col px-5 pt-10 pb-8"
-      style={{ background: "#FFFFFF", color: TEXT_STRONG, fontFamily: KOREAN_STACK }}
+      className="flex min-h-dvh flex-col px-5 pt-10"
+      style={{ background: SURFACE, color: TEXT_STRONG, fontFamily: KOREAN_STACK, paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
     >
       {/* 상단: 응원팀 배지 (커스텀 헤더 아님 — 본문 콘텐츠) */}
       <section className="flex flex-col gap-1 pb-6">
@@ -304,7 +307,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <span
               className="flex h-9 w-9 items-center justify-center rounded-full text-[18px]"
-              style={{ background: user.subscribed ? LIVE_BG : "#F2F4F6" }}
+              style={{ background: user.subscribed ? LIVE_BG : grey100 }}
               aria-hidden="true"
             >
               {user.subscribed ? "🔔" : "🔕"}
@@ -318,19 +321,12 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => toggleSubscription(!user.subscribed)}
+          <Switch
+            checked={user.subscribed}
+            onCheckedChange={(checked) => toggleSubscription(checked)}
             disabled={isTogglingSubscription}
-            className="rounded-lg px-3 py-1.5 text-[13px] font-semibold"
-            style={{
-              background: user.subscribed ? "#F2F4F6" : BRAND_COLOR,
-              color: user.subscribed ? TEXT_MEDIUM : "#FFFFFF",
-              opacity: isTogglingSubscription ? 0.6 : 1,
-            }}
-          >
-            {isTogglingSubscription ? "처리 중…" : user.subscribed ? "끄기" : "켜기"}
-          </button>
+            aria-label="경기 종료 알림"
+          />
         </section>
       )}
       {toggleSubscriptionError !== null && (
@@ -370,7 +366,7 @@ export default function Home() {
             <button
               type="button"
               onClick={refetch}
-              className="w-full rounded-xl px-5 py-3 text-[14px] font-semibold text-white"
+              className="w-full rounded-xl px-5 py-3 text-[14px] font-semibold text-white transition-transform active:scale-[0.98]"
               style={{ background: BRAND_COLOR }}
               aria-label="경기 목록 다시 불러오기"
             >

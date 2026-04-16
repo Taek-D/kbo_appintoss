@@ -5,7 +5,9 @@ export default defineConfig({
   brand: {
     displayName: 'KBO 야구 알리미',
     primaryColor: '#3182F6',
+    icon: './public/app-icon.png',
   },
+  permissions: [],
   navigationBar: {
     withBackButton: true,
     withHomeButton: true,

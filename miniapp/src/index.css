@@ -98,5 +98,31 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 전역 포커스 표시 — WCAG 2.2 AA 2.4.7 Focus Visible */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* KBO 페이지 공용 키프레임 */
+@keyframes kbo-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes kbo-skeleton {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="kbo-fade"],
+  [style*="kbo-skeleton"] {
+    animation: none !important;
   }
 }

@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useBannerAd } from "../hooks/useBannerAd";
 import { isTossApp } from "../lib/environment";
-import { BORDER_WEAK, TEXT_WEAK, KOREAN_STACK } from "../lib/design-tokens";
+import { BORDER_WEAK, TEXT_WEAK, grey100, KOREAN_STACK } from "../lib/design-tokens";
 
 type BannerAdProps = {
   adGroupId: string;
@@ -60,7 +60,7 @@ export function BannerAd({ adGroupId }: BannerAdProps) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#F3F4F6",
+            background: grey100,
             border: `1px dashed ${BORDER_WEAK}`,
             borderRadius: 12,
             fontFamily: KOREAN_STACK,
