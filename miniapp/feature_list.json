@@ -171,9 +171,9 @@
         "브랜딩 일치 최종 확인",
         "스킴/라우팅 404 체크"
       ],
-      "passes": false,
+      "passes": true,
       "sdkBlock": null,
-      "notes": "심사 직전 최종 관문"
+      "notes": "harness-validate 전체 PASS (N1~N6, A1~A4, C1~C3) + 11단계 출시 체크리스트 코드 수준 전체 PASS. 고아 파일(Brainstorm.tsx, Index.tsx) 삭제, toss-login.ts TS2448 수정. 콘솔 등록 전 준비 필요: 600x600 로고 에셋, 콜백 URL 등록, 프로덕션 ALLOWED_ORIGINS env."
     }
   ]
 }

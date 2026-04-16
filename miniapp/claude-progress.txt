@@ -295,6 +295,42 @@
 - 다음 작업: F012 (최종 규칙 검증 및 출시 체크리스트)
   — /harness-validate 전체 스캔, /appintoss-nongame-launch-checklist 11단계.
 
+### Session 12 — 2026-04-16 (F012 구현 — 최종 검증 + 출시 체크리스트)
+- /harness-validate 전체 스캔 실행:
+  - NEVER 규칙 6개(N1~N6): 전부 PASS
+  - ALWAYS 규칙 4개(A1~A4): 전부 PASS
+  - CONDITIONAL 규칙 3개(C1~C3): C1 광고 PASS, C2 결제 N/A, C3 공유 PASS
+  - N2에서 고아 파일 감지 → Brainstorm.tsx, Index.tsx 삭제
+  - typecheck 중 toss-login.ts TS2448 발견 → cleanupRef 선언 위치 수정
+- /appintoss-nongame-launch-checklist 11단계 최종 심사:
+  - 1단계(접속/기능): PASS — 5개 라우트 정상
+  - 2단계(내비게이션바): PASS — granite.config.ts 설정 완비
+  - 3단계(로그인/인증/권한): PASS — Intro 후 로그인, unlink 핸들러 등록
+  - 4단계(스킴/라우팅): PASS — NotFound catch-all 포함
+  - 5단계(UI/UX): PASS — 수평 스크롤/핀치줌/alert 모두 규칙 준수
+  - 6단계(텍스트/브랜딩): WARN — 600x600 로고 에셋 미준비 (코드 외)
+  - 7단계(결제): N/A
+  - 8단계(인앱 광고): PASS — 배너/전면 순서·이벤트 정상
+  - 9단계(외부 링크): PASS — 앱 설치 유도 0건
+  - 10단계(TDS): PASS — TDSMobileAITProvider + 디자인 토큰 중앙화
+  - 11단계(공유 리워드): PASS — getTossShareLink + ShareFeedback
+- 수정 사항:
+  - ❌→✅ src/pages/Brainstorm.tsx 삭제 (고아 템플릿, <header> 태그 포함)
+  - ❌→✅ src/pages/Index.tsx 삭제 (고아 템플릿, hamburger 주석 포함)
+  - ❌→✅ src/lib/toss-login.ts cleanupRef 선언 위치 수정 (TS2448)
+- 검증 결과 (F001~F012 최종):
+  - tsc -p tsconfig.app.json --noEmit: 0 errors ✅
+  - pnpm lint: 0 errors, 8 warnings (regression 0)
+  - harness-validate: 전체 PASS
+  - 11단계 출시 체크리스트: 코드 수준 전체 PASS
+- 콘솔 등록 전 준비 필요 (코드 외):
+  - 600x600 로고 에셋 → granite.config.ts brand.icon 등록
+  - 콘솔 정보등록 앱 이름 "KBO 야구 알리미" 일치 확인
+  - 콜백 URL 등록 (UNLINK, WITHDRAWAL_TERMS, WITHDRAWAL_TOSS)
+  - 프로덕션 ALLOWED_ORIGINS env에 miniapp 도메인 주입
+
+## 프로젝트 완료 — 전체 12/12 기능 구현 완료 🎉
+
 ### Session 7 — 2026-04-12 (F007 구현)
 - 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
   - useShareLink 훅: isTossApp() 분기 → Dynamic import `getTossShareLink(url, ogImageUrl?)`
