@@ -33,22 +33,32 @@ const ALLOWED_ORIGINS = buildAllowedOrigins()
 const ALLOWED_METHODS = 'GET,POST,PUT,DELETE,OPTIONS'
 const ALLOWED_HEADERS = 'Content-Type, Authorization'
 
-function isOriginAllowed(origin: string | null): origin is string {
-  return origin !== null && ALLOWED_ORIGINS.has(origin)
+/**
+ * origin 허용 여부 판단.
+ * - 명시적 화이트리스트에 포함된 origin
+ * - origin === null 또는 "null" → 토스 앱 WebView (로컬 .ait 번들)
+ * - origin 헤더 자체가 없음 → same-origin 또는 non-browser
+ */
+function resolveAllowedOrigin(origin: string | null): string | null {
+  if (origin === null) return null           // origin 헤더 없음 → same-origin, CORS 불필요
+  if (origin === 'null') return 'null'       // 토스 WebView 로컬 번들 → Access-Control-Allow-Origin: null
+  if (ALLOWED_ORIGINS.has(origin)) return origin
+  return null
 }
 
 export function middleware(request: NextRequest) {
   const origin = request.headers.get('origin')
+  const allowed = resolveAllowedOrigin(origin)
 
-  // Preflight (CORS OPTIONS): 실제 핸들러를 거치지 않고 바로 응답
+  // Preflight (CORS OPTIONS)
   if (request.method === 'OPTIONS') {
-    if (!isOriginAllowed(origin)) {
+    if (allowed === null) {
       return new NextResponse(null, { status: 403 })
     }
     return new NextResponse(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Origin': allowed,
         'Access-Control-Allow-Methods': ALLOWED_METHODS,
         'Access-Control-Allow-Headers': ALLOWED_HEADERS,
         'Access-Control-Allow-Credentials': 'true',
@@ -61,8 +71,8 @@ export function middleware(request: NextRequest) {
   // 일반 요청: 라우트 핸들러 실행 + 응답에 CORS 헤더 덧붙이기
   const response = NextResponse.next()
 
-  if (isOriginAllowed(origin)) {
-    response.headers.set('Access-Control-Allow-Origin', origin)
+  if (allowed !== null) {
+    response.headers.set('Access-Control-Allow-Origin', allowed)
     response.headers.set('Access-Control-Allow-Credentials', 'true')
     response.headers.append('Vary', 'Origin')
   }
