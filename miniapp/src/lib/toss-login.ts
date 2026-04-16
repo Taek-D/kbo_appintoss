@@ -56,6 +56,8 @@ export async function requestTossAppLogin(): Promise<TossAuthResult> {
 export function registerUnlinkHandler(handler: () => void): () => void {
   let cancelled = false;
 
+  let cleanupRef: (() => void) | null = null;
+
   void (async () => {
     let isToss = false;
     try {
@@ -82,8 +84,6 @@ export function registerUnlinkHandler(handler: () => void): () => void {
       // SDK unlink API 미지원 환경 — 무시
     }
   })();
-
-  let cleanupRef: (() => void) | null = null;
 
   return () => {
     cancelled = true;
