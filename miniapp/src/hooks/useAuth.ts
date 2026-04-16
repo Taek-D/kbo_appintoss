@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
-import { apiFetch } from "../lib/api-client";
+import { apiFetch, setAuthToken } from "../lib/api-client";
 import type { TeamCode } from "../lib/teams";
 import {
   registerUnlinkHandler,
@@ -21,6 +21,7 @@ export interface AuthUser {
 interface LoginResponse {
   success: true;
   user: AuthUser;
+  token: string;
 }
 
 interface SubscriptionResponse {
@@ -42,13 +43,14 @@ async function fetchMe(): Promise<AuthUser> {
 }
 
 async function postLogin(result: TossAuthResult): Promise<AuthUser> {
-  const { user } = await apiFetch<LoginResponse>("/api/auth/login", {
+  const { user, token } = await apiFetch<LoginResponse>("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({
       authorizationCode: result.authorizationCode,
       referrer: result.referrer === "SANDBOX" ? "sandbox" : "DEFAULT",
     }),
   });
+  setAuthToken(token);
   return user;
 }
 

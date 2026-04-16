@@ -37,6 +37,28 @@ export async function upsertUser(tossUserKey: string): Promise<User> {
 }
 
 /**
+ * DB id로 유저를 조회한다.
+ * Authorization: Bearer <userId> 토큰 기반 인증에서 사용.
+ */
+export async function getUserById(userId: string): Promise<User | null> {
+  const supabase = await createServerSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('users')
+    .select()
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') return null
+    logger.error({ error, userId }, 'getUserById 실패')
+    throw new Error(`유저 조회 실패: ${error.message}`)
+  }
+
+  return data as User
+}
+
+/**
  * 토스 userKey로 유저를 조회한다.
  * 존재하면 User 반환, 없으면 null 반환.
  */

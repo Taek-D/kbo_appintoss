@@ -4,6 +4,7 @@
  */
 export {
   upsertUser,
+  getUserById,
   getUserByTossKey,
   updateTeamCode,
   updateSubscription,

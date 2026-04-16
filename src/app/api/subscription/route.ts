@@ -16,12 +16,19 @@ const UpdateTeamRequestSchema = z.object({
 })
 
 /**
- * 세션 쿠키에서 유저 ID를 추출하는 헬퍼
+ * Authorization 헤더 또는 세션 쿠키에서 유저 ID를 추출하는 헬퍼.
+ * 토스 WebView(토큰 기반) → 웹 개발(쿠키 기반) → 게스트 순으로 시도.
  */
 async function extractUserId(request: NextRequest): Promise<string | null> {
+  // 1. Authorization 헤더 우선 (토스 WebView 토큰 기반)
+  const auth = request.headers.get('Authorization')
+  if (auth?.startsWith('Bearer ')) {
+    return auth.slice(7)
+  }
+
+  // 2. 쿠키 기반 fallback (웹 개발 환경)
   const sessionToken = request.cookies.get('session_token')?.value
 
-  // TODO: 토스 인증 연동 후 제거 — 임시 게스트 모드
   if (!sessionToken) {
     return 'guest'
   }

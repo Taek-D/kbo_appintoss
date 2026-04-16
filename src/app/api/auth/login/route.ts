@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         team_code: user.team_code,
         subscribed: user.subscribed,
       },
+      token: user.id,
     })
 
     // F008: cross-origin(miniapp Vite dev server) 쿠키 전송을 위해 SameSite=None + Secure.

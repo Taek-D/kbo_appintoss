@@ -2,17 +2,25 @@
  * kbo_game Next.js 백엔드 API 호출 래퍼 (F003 + F008).
  *
  * - base URL은 VITE_API_BASE_URL 환경변수 (없으면 현재 origin — same-origin 배포 대응)
- * - credentials: "include" — httpOnly session 쿠키 자동 전달
+ * - 토스 WebView: Authorization Bearer 토큰 기반 (쿠키 사용 불가)
+ * - 웹 개발: credentials "include" 없이도 동작 (게스트 모드 fallback)
  * - JSON 직렬화 + 표준 에러 응답 처리
  * - F008: 네트워크 오류, 비-JSON 응답 방어
- *
- * 서버 CORS 설정은 kbo_game/src/middleware.ts 참조.
- * cross-origin + credentials 조합이므로 서버에서 Access-Control-Allow-Origin에
- * 구체적 origin(예: http://localhost:5173)을 명시해야 한다.
  */
 
 const BASE_URL: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+
+/** 인메모리 인증 토큰 (로그인 성공 시 서버에서 발급) */
+let _authToken: string | null = null;
+
+export function setAuthToken(token: string | null): void {
+  _authToken = token;
+}
+
+export function getAuthToken(): string | null {
+  return _authToken;
+}
 
 export class ApiError extends Error {
   readonly status: number;
@@ -65,15 +73,22 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const url = `${BASE_URL}${path}`;
 
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (_authToken) {
+    headers["Authorization"] = `Bearer ${_authToken}`;
+  }
+  // init.headers가 있으면 병합 (호출부에서 추가 헤더 지정 가능)
+  if (init?.headers) {
+    Object.assign(headers, init.headers);
+  }
+
   let res: Response;
   try {
     res = await fetch(url, {
       ...init,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {}),
-      },
+      headers,
     });
   } catch (err) {
     throw toNetworkError(err);
