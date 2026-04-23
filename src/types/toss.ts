@@ -7,7 +7,7 @@ export type TossReferrer = 'sandbox' | 'DEFAULT'
 export type TossAuthResponse = {
   accessToken: string
   refreshToken: string
-  tokenType: 'Bearer'
+  tokenType: string
   expiresIn: number
 }
 

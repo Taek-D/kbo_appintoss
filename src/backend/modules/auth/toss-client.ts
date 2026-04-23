@@ -4,13 +4,28 @@ import { logger } from '@/lib/logger'
 import type { TossAuthResponse, TossReferrer, TossUserInfo } from '@/types/toss'
 
 /**
- * 토스 API 응답 검증용 Zod 스키마
- * CLAUDE.md: 타입 단언 as 사용 최소화, Zod parse로 검증
+ * 토스 파트너 API는 공통 envelope 구조로 응답한다.
+ *   성공: { resultType: 'SUCCESS', success: <data>, error: null }
+ *   실패: { resultType: 'FAIL', success: null, error: { errorCode, reason, ... } }
+ * HTTP는 대부분 200이고, 성공/실패는 resultType으로 구분한다.
  */
-const TossAuthResponseSchema = z.object({
+const TossErrorSchema = z.object({
+  errorCode: z.string(),
+  reason: z.string().optional(),
+  errorType: z.number().optional(),
+})
+
+const TossEnvelopeSchema = z.object({
+  resultType: z.enum(['SUCCESS', 'FAIL']),
+  success: z.unknown().nullable().optional(),
+  error: TossErrorSchema.nullable().optional(),
+})
+
+const TossAuthSuccessSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
-  tokenType: z.literal('Bearer'),
+  // 토스는 실무상 'Bearer'/'bearer' 둘 다 가능 — literal 대신 string 관대 수용
+  tokenType: z.string(),
   expiresIn: z.number(),
 })
 
@@ -103,18 +118,28 @@ export async function exchangeAuthCode(
   )
 
   if (response.status < 200 || response.status >= 300) {
-    const errorBody = safeParse(response.body)
-    logger.error({ status: response.status, errorBody }, '토스 authCode 교환 실패')
+    logger.error({ status: response.status, body: response.body }, '토스 authCode 교환 HTTP 실패')
     throw new Error(`토스 인증 실패 (${response.status}): ${response.body.slice(0, 200)}`)
   }
 
   const rawData = safeParse(response.body)
-  const parsed = TossAuthResponseSchema.safeParse(rawData)
+  const envelope = TossEnvelopeSchema.safeParse(rawData)
+  if (!envelope.success) {
+    logger.error({ errors: envelope.error.issues, rawData }, '토스 envelope 검증 실패')
+    throw new Error('토스 API 응답 형식이 올바르지 않습니다')
+  }
+
+  if (envelope.data.resultType === 'FAIL' || !envelope.data.success) {
+    const errorCode = envelope.data.error?.errorCode ?? 'UNKNOWN'
+    const reason = envelope.data.error?.reason ?? '원인 미상'
+    logger.warn({ errorCode, reason }, '토스 authCode 교환 실패(FAIL)')
+    throw new Error(`토스 인증 실패 (${errorCode}): ${reason}`)
+  }
+
+  const parsed = TossAuthSuccessSchema.safeParse(envelope.data.success)
   if (!parsed.success) {
-    logger.error({ errors: parsed.error.issues, rawData }, '토스 응답 스키마 검증 실패')
-    throw new Error(
-      `토스 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(rawData).slice(0, 400)}`,
-    )
+    logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 success 스키마 실패')
+    throw new Error('토스 API 응답 형식이 올바르지 않습니다')
   }
   return parsed.data
 }
@@ -133,15 +158,27 @@ export async function getTossUserKey(accessToken: string): Promise<TossUserInfo>
   })
 
   if (response.status < 200 || response.status >= 300) {
-    const errorBody = safeParse(response.body)
-    logger.error({ status: response.status, errorBody }, '토스 userKey 조회 실패')
+    logger.error({ status: response.status, body: response.body }, '토스 userKey 조회 HTTP 실패')
     throw new Error(`토스 유저 조회 실패 (${response.status}): ${response.body.slice(0, 200)}`)
   }
 
   const rawData = safeParse(response.body)
-  const parsed = TossUserInfoSchema.safeParse(rawData)
+  const envelope = TossEnvelopeSchema.safeParse(rawData)
+  if (!envelope.success) {
+    logger.error({ errors: envelope.error.issues, rawData }, '토스 유저 envelope 검증 실패')
+    throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
+  }
+
+  if (envelope.data.resultType === 'FAIL' || !envelope.data.success) {
+    const errorCode = envelope.data.error?.errorCode ?? 'UNKNOWN'
+    const reason = envelope.data.error?.reason ?? '원인 미상'
+    logger.warn({ errorCode, reason }, '토스 userKey 조회 실패(FAIL)')
+    throw new Error(`토스 유저 조회 실패 (${errorCode}): ${reason}`)
+  }
+
+  const parsed = TossUserInfoSchema.safeParse(envelope.data.success)
   if (!parsed.success) {
-    logger.error({ errors: parsed.error.issues }, '토스 유저 응답 스키마 검증 실패')
+    logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 유저 success 스키마 실패')
     throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
   }
   return parsed.data
