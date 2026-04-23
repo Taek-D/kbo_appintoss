@@ -34,6 +34,8 @@ export async function exchangeAuthCode(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'kbo-game-miniapp/1.0 (+https://kbogame.vercel.app)',
     },
     body: JSON.stringify({
       authorizationCode: authCode,
@@ -77,6 +79,8 @@ export async function getTossUserKey(
     method: 'GET',
     headers: {
       Authorization: `Bearer ${accessToken}`,
+      'Accept': 'application/json',
+      'User-Agent': 'kbo-game-miniapp/1.0 (+https://kbogame.vercel.app)',
     },
   })
 
