@@ -17,7 +17,7 @@ const TossUserInfoSchema = z.object({
   userKey: z.string(),
 })
 
-const TOSS_API_BASE = 'https://api-partner.toss.im'
+const TOSS_API_BASE = 'https://apps-in-toss-api.toss.im'
 
 /**
  * 토스 OAuth2 authCode를 accessToken으로 교환한다 [AUTH-01]
