@@ -35,24 +35,28 @@ const ALLOWED_HEADERS = 'Content-Type, Authorization'
 
 /**
  * origin 허용 여부 판단.
- * - 명시적 화이트리스트에 포함된 origin
- * - origin === null 또는 "null" → 토스 앱 WebView (로컬 .ait 번들)
  * - origin 헤더 자체가 없음 → same-origin 또는 non-browser
+ * - origin === "null" → 토스 앱 WebView 로컬 .ait 번들
+ * - 그 외 모든 origin → 허용 (Bearer 토큰으로 보호되므로 CORS 자체는 넓게 허용)
+ *
+ * credentials는 명시 whitelist에 있는 origin(=웹 개발 localhost)에만 true,
+ * 그 외(토스 WebView, 모바일 WebView 등)는 false로 내려 쿠키 정책 간섭을 제거한다.
  */
 function resolveAllowedOrigin(origin: string | null): string | null {
   if (origin === null) return null           // origin 헤더 없음 → same-origin, CORS 불필요
   if (origin === 'null') return 'null'       // 토스 WebView 로컬 번들 → Access-Control-Allow-Origin: null
-  if (ALLOWED_ORIGINS.has(origin)) return origin
-  return null
+  return origin                               // 그 외 echo (credentials는 화이트리스트에서만 true)
 }
 
 export function middleware(request: NextRequest) {
   const origin = request.headers.get('origin')
   const allowed = resolveAllowedOrigin(origin)
 
-  // Origin "null"(토스 WebView)에서는 credentials 플래그 비활성
-  // WebKit이 Allow-Credentials: true + Allow-Origin: null 조합을 차단하므로
-  const useCredentials = allowed !== null && allowed !== 'null'
+  // credentials=true는 명시 whitelist에 등록된 origin(=웹 개발 localhost)에만 허용한다.
+  // 토스 WebView(origin:null) / 외부 모바일 WebView(echo origin) 에는 쿠키 없으므로 끈다 —
+  // 이러면 WebKit의 Allow-Credentials+쿠키 간섭이 원천 차단된다.
+  const useCredentials =
+    allowed !== null && allowed !== 'null' && ALLOWED_ORIGINS.has(allowed)
 
   // Preflight (CORS OPTIONS)
   if (request.method === 'OPTIONS') {
