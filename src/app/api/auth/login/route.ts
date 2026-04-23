@@ -71,7 +71,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증에 실패했습니다' }, { status: 401 })
     }
 
-    logger.error({ error: message }, '로그인 처리 중 오류')
-    return NextResponse.json({ error: '서버 오류가 발생했습니다' }, { status: 500 })
+    const stack = error instanceof Error ? error.stack : undefined
+    let causeInfo: unknown = undefined
+    if (error instanceof Error && 'cause' in error && error.cause) {
+      const c = error.cause
+      if (c instanceof Error) {
+        causeInfo = { name: c.name, message: c.message, code: (c as { code?: unknown }).code, stack: c.stack }
+      } else {
+        causeInfo = String(c)
+      }
+    }
+    logger.error({ error: message, stack, causeInfo }, '로그인 처리 중 오류')
+    // TEMP DEBUG(2차): 도메인 수정 후에도 실패하는 이유 확인
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다', debug: { message, stack, cause: causeInfo } },
+      { status: 500 }
+    )
   }
 }
