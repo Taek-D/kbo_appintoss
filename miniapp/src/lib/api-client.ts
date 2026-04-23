@@ -34,14 +34,16 @@ export class ApiError extends Error {
 /**
  * 네트워크/DNS 실패 등 fetch 자체가 throw한 경우.
  * status=0은 "HTTP 응답 수신 실패"의 관례적 표현.
+ * 토스 WebView에서 원인 추적을 위해 에러 이름(TypeError 등)을 함께 노출한다.
  */
-function toNetworkError(err: unknown): ApiError {
+function toNetworkError(err: unknown, url: string): ApiError {
   if (err instanceof ApiError) return err;
-  const message =
-    err instanceof Error && err.message.length > 0
-      ? err.message
-      : "네트워크 연결에 실패했어요";
-  return new ApiError(0, message);
+  if (err instanceof Error) {
+    const name = err.name || "Error";
+    const msg = err.message.length > 0 ? err.message : "네트워크 오류";
+    return new ApiError(0, `${msg} [${name} @ ${url}]`);
+  }
+  return new ApiError(0, `네트워크 연결 실패 [${String(err)} @ ${url}]`);
 }
 
 function safeParseJson(text: string): unknown {
@@ -89,9 +91,14 @@ export async function apiFetch<T>(
     res = await fetch(url, {
       ...init,
       headers,
+      // 토스 WebView(Origin: null)에서 WebKit이 쿠키 정책을 느슨하게 적용하며
+      // Allow-Credentials 없는 응답을 차단하는 이슈를 피하기 위해 명시적으로 omit.
+      // 인증은 Authorization: Bearer 헤더로 수행한다.
+      credentials: "omit",
+      mode: "cors",
     });
   } catch (err) {
-    throw toNetworkError(err);
+    throw toNetworkError(err, url);
   }
 
   const text = await res.text();
