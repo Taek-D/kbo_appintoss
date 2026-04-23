@@ -72,10 +72,25 @@ export async function POST(request: NextRequest) {
     }
 
     const stack = error instanceof Error ? error.stack : undefined
-    logger.error({ error: message, stack }, '로그인 처리 중 오류')
-    // TEMP DEBUG: origin 검사 기반 정적 원인 반환 (트러블슈팅 완료 후 되돌린다)
+    // Node fetch(undici) 실패는 error.cause에 실제 네트워크 원인(ENOTFOUND, 타임아웃 등)이 실린다
+    let causeInfo: unknown = undefined
+    if (error instanceof Error && 'cause' in error && error.cause) {
+      const c = error.cause
+      if (c instanceof Error) {
+        causeInfo = {
+          name: c.name,
+          message: c.message,
+          code: (c as { code?: unknown }).code,
+          errno: (c as { errno?: unknown }).errno,
+          stack: c.stack,
+        }
+      } else {
+        causeInfo = String(c)
+      }
+    }
+    logger.error({ error: message, stack, causeInfo }, '로그인 처리 중 오류')
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다', debug: { message, stack } },
+      { error: '서버 오류가 발생했습니다', debug: { message, stack, cause: causeInfo } },
       { status: 500 }
     )
   }
