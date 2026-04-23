@@ -71,7 +71,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증에 실패했습니다' }, { status: 401 })
     }
 
-    logger.error({ error: message }, '로그인 처리 중 오류')
-    return NextResponse.json({ error: '서버 오류가 발생했습니다' }, { status: 500 })
+    const stack = error instanceof Error ? error.stack : undefined
+    logger.error({ error: message, stack }, '로그인 처리 중 오류')
+    // TEMP DEBUG: origin 검사 기반 정적 원인 반환 (트러블슈팅 완료 후 되돌린다)
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다', debug: { message, stack } },
+      { status: 500 }
+    )
   }
 }
