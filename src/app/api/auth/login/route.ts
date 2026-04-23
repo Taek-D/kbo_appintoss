@@ -80,6 +80,9 @@ export async function POST(request: NextRequest) {
       }
     }
     logger.error({ error: message, stack, causeInfo }, '로그인 처리 중 오류')
-    return NextResponse.json({ error: '서버 오류가 발생했습니다' }, { status: 500 })
+    return NextResponse.json(
+      { error: '서버 오류가 발생했습니다', debug: { message, cause: causeInfo } },
+      { status: 500 }
+    )
   }
 }
