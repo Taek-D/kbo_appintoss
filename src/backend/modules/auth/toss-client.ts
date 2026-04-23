@@ -111,8 +111,10 @@ export async function exchangeAuthCode(
   const rawData = safeParse(response.body)
   const parsed = TossAuthResponseSchema.safeParse(rawData)
   if (!parsed.success) {
-    logger.error({ errors: parsed.error.issues }, '토스 응답 스키마 검증 실패')
-    throw new Error('토스 API 응답 형식이 올바르지 않습니다')
+    logger.error({ errors: parsed.error.issues, rawData }, '토스 응답 스키마 검증 실패')
+    throw new Error(
+      `토스 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(rawData).slice(0, 400)}`,
+    )
   }
   return parsed.data
 }
