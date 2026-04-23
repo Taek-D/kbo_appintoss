@@ -80,8 +80,10 @@ export async function POST(request: NextRequest) {
       }
     }
     logger.error({ error: message, stack, causeInfo }, '로그인 처리 중 오류')
+    // TEMP DEBUG: 클라이언트는 body.error만 추출하므로 debug를 이 필드에 직접 담는다
+    const causeText = causeInfo ? ` | cause=${JSON.stringify(causeInfo).slice(0, 200)}` : ''
     return NextResponse.json(
-      { error: '서버 오류가 발생했습니다', debug: { message, cause: causeInfo } },
+      { error: `서버오류: ${message}${causeText}` },
       { status: 500 }
     )
   }
