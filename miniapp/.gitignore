@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# mTLS 인증서 (절대 커밋 금지)
+mTLS_*/
+*.pem
+*_private.key
+*_public.crt
