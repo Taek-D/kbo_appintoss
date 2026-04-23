@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     // 3. userKey -> DB upsert
     const user = await upsertUser(userKey)
 
-    // 4. session cookie 설정 (httpOnly, secure)
     const response = NextResponse.json({
       success: true,
       user: {
@@ -49,15 +48,19 @@ export async function POST(request: NextRequest) {
       token: user.id,
     })
 
-    // F008: cross-origin(miniapp Vite dev server) 쿠키 전송을 위해 SameSite=None + Secure.
-    // Chrome/Firefox는 localhost를 secure context로 간주하므로 HTTP dev에서도 동작한다.
-    response.cookies.set('session_token', authResponse.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 3600,
-      path: '/',
-    })
+    // 토스 WebView(Origin: null)에서는 Set-Cookie를 내리면 WebKit이 fetch를 차단한다
+    // (Allow-Credentials가 꺼진 CORS 응답에 쿠키가 실리면 스펙 위반으로 간주).
+    // 웹 브라우저(Origin 있음)만 쿠키 기반 세션을 사용하고, WebView는 Bearer 토큰으로 인증한다.
+    const origin = request.headers.get('origin')
+    if (origin !== 'null') {
+      response.cookies.set('session_token', authResponse.accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 3600,
+        path: '/',
+      })
+    }
 
     return response
   } catch (error: unknown) {

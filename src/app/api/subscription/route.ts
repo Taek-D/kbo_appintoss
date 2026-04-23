@@ -70,14 +70,17 @@ export async function PUT(request: NextRequest) {
         success: true,
         user: { id: 'guest', team_code: parsed.data.team_code, subscribed: true },
       })
-      // F008: cross-origin(miniapp) 대응 — session_token과 동일한 SameSite/Secure 정책.
-      res.cookies.set('guest_team', parsed.data.team_code, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30,
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-      })
+      // 토스 WebView(Origin: null)에서는 Set-Cookie가 WebKit fetch 차단을 유발하므로 생략한다.
+      // WebView는 인증 후 Bearer 토큰으로 동작하므로 게스트 쿠키 자체가 필요 없다.
+      if (request.headers.get('origin') !== 'null') {
+        res.cookies.set('guest_team', parsed.data.team_code, {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 30,
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+        })
+      }
       return res
     }
 
