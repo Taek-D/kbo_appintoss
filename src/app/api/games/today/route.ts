@@ -16,7 +16,7 @@ export async function GET() {
     const today = getTodayKst()
 
     const { data: games, error } = await supabase
-      .from('games')
+      .from('kbo_games')
       .select('*')
       .eq('game_date', today)
       .order('started_at', { ascending: true, nullsFirst: false })

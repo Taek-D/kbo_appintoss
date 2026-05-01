@@ -1,0 +1,12 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - main [ref=e42]:
+    - generic [ref=e43]:
+      - paragraph [ref=e44]: 오늘의 KBO
+      - heading "KIA 오늘 경기는요" [level=1] [ref=e45]
+    - generic [ref=e47]:
+      - generic [ref=e48]: ⚾
+      - paragraph [ref=e49]: 오늘은 경기가 없어요
+      - paragraph [ref=e50]: 경기가 있는 날 알림을 보내드릴게요.

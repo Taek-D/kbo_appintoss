@@ -1,0 +1,10 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - heading "KBO 야구 알리미" [level=1] [ref=e9]
+      - paragraph [ref=e10]: 응원팀 경기 결과를 바로 알려드려요
+    - button "토스로 시작하기" [ref=e12]
+  - button "Open Next.js Dev Tools" [ref=e18] [cursor=pointer]:
+    - img [ref=e19]
+  - alert [ref=e22]

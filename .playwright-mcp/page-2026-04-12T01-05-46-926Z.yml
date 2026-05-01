@@ -1,0 +1,16 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - img "KBO 야구 알리미 로고" [ref=e5]:
+        - generic [ref=e6]: ⚾
+      - generic [ref=e7]:
+        - heading "KBO 야구 알리미" [level=1] [ref=e8]
+        - paragraph [ref=e9]:
+          - text: 응원팀 경기가 끝나면
+          - text: 즉시 알려드릴게요.
+    - generic [ref=e10]:
+      - button "KBO 야구 알리미 시작하기" [ref=e11]: 시작하기
+      - paragraph [ref=e12]: 시작 버튼을 누르면 토스 계정으로 연결돼요.

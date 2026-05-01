@@ -20,7 +20,7 @@ export async function GET(
     const supabase = await createServerSupabaseClient()
 
     const { data: game, error } = await supabase
-      .from('games')
+      .from('kbo_games')
       .select('*')
       .eq('id', parsed.data)
       .single()

@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e18] [cursor=pointer]:
+    - img [ref=e19]
+  - alert [ref=e22]
+  - generic [ref=e23]:
+    - heading "응원팀을 선택해주세요" [level=1] [ref=e25]
+    - generic [ref=e26]:
+      - button "HH 한화 이글스" [ref=e27]:
+        - generic [ref=e29]: HH
+        - generic [ref=e30]: 한화 이글스
+      - button "OB 두산 베어스" [ref=e31]:
+        - generic [ref=e33]: OB
+        - generic [ref=e34]: 두산 베어스
+      - button "LG LG 트윈스" [ref=e35]:
+        - generic [ref=e37]: LG
+        - generic [ref=e38]: LG 트윈스
+      - button "KT KT 위즈" [ref=e39]:
+        - generic [ref=e41]: KT
+        - generic [ref=e42]: KT 위즈
+      - button "SS 삼성 라이온즈" [ref=e43]:
+        - generic [ref=e45]: SS
+        - generic [ref=e46]: 삼성 라이온즈
+      - button "NC NC 다이노스" [ref=e47]:
+        - generic [ref=e49]: NC
+        - generic [ref=e50]: NC 다이노스
+      - button "SK SSG 랜더스" [ref=e51]:
+        - generic [ref=e53]: SK
+        - generic [ref=e54]: SSG 랜더스
+      - button "LT 롯데 자이언츠" [ref=e55]:
+        - generic [ref=e57]: LT
+        - generic [ref=e58]: 롯데 자이언츠
+      - button "WO 키움 히어로즈" [ref=e59]:
+        - generic [ref=e61]: WO
+        - generic [ref=e62]: 키움 히어로즈
+      - button "KI KIA 타이거즈" [ref=e63]:
+        - generic [ref=e65]: KI
+        - generic [ref=e66]: KIA 타이거즈

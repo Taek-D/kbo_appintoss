@@ -20,7 +20,7 @@ export async function upsertUser(tossUserKey: string): Promise<User> {
   const supabase = await createServerSupabaseClient()
 
   const { data, error } = await supabase
-    .from('users')
+    .from('kbo_users')
     .upsert(
       { toss_user_key: tossUserKey },
       { onConflict: 'toss_user_key' }
@@ -44,7 +44,7 @@ export async function getUserById(userId: string): Promise<User | null> {
   const supabase = await createServerSupabaseClient()
 
   const { data, error } = await supabase
-    .from('users')
+    .from('kbo_users')
     .select()
     .eq('id', userId)
     .single()
@@ -66,7 +66,7 @@ export async function getUserByTossKey(tossUserKey: string): Promise<User | null
   const supabase = await createServerSupabaseClient()
 
   const { data, error } = await supabase
-    .from('users')
+    .from('kbo_users')
     .select()
     .eq('toss_user_key', tossUserKey)
     .single()
@@ -97,7 +97,7 @@ export async function updateTeamCode(userId: string, teamCode: TeamCode): Promis
   const supabase = await createServerSupabaseClient()
 
   const { data, error } = await supabase
-    .from('users')
+    .from('kbo_users')
     .update({ team_code: parsed.data, subscribed: true })
     .eq('id', userId)
 
@@ -116,7 +116,7 @@ export async function updateSubscription(userId: string, subscribed: boolean): P
   const supabase = await createServerSupabaseClient()
 
   const { error } = await supabase
-    .from('users')
+    .from('kbo_users')
     .update({ subscribed })
     .eq('id', userId)
 

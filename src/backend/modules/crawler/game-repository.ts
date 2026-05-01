@@ -32,7 +32,7 @@ export async function syncGames(crawledGames: CrawlerGame[]): Promise<StateTrans
 
   // DB에서 오늘 경기 조회
   const { data: dbGames, error: selectError } = await supabase
-    .from('games')
+    .from('kbo_games')
     .select('*')
     .eq('game_date', today)
 
@@ -68,7 +68,7 @@ export async function syncGames(crawledGames: CrawlerGame[]): Promise<StateTrans
     }
 
     const { error: upsertError } = await supabase
-      .from('games')
+      .from('kbo_games')
       .upsert(payload, { onConflict: 'game_date,home_team,away_team' })
 
     if (upsertError) {

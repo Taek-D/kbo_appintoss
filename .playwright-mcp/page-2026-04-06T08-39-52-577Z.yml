@@ -1,0 +1,26 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e49]:
+    - generic [ref=e50]:
+      - button "뒤로가기" [ref=e51]:
+        - img [ref=e52]
+      - heading "경기 결과" [level=1] [ref=e54]
+    - generic [ref=e57]:
+      - generic [ref=e58]: 승리!
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e62]: SSG
+          - generic [ref=e63]: SSG
+        - generic [ref=e64]:
+          - generic [ref=e65]: "0"
+          - generic [ref=e66]: ":"
+          - generic [ref=e67]: "0"
+        - generic [ref=e68]:
+          - generic [ref=e70]: KIA
+          - generic [ref=e71]: KIA
+    - paragraph [ref=e74]: 이닝 정보가 없습니다
+    - generic [ref=e76]:
+      - paragraph [ref=e77]: 2026-04-06 경기
+      - paragraph [ref=e78]: "종료: 오후 09:30"

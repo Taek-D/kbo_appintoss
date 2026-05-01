@@ -37,7 +37,7 @@ async function sendNotificationsForGame(
 
   // 1. 구독자 조회 (홈팀 + 원정팀)
   const { data: users, error: usersError } = await supabase
-    .from('users')
+    .from('kbo_users')
     .select('id, toss_user_key')
     .in('team_code', [homeTeam, awayTeam])
     .eq('subscribed', true)
@@ -105,7 +105,7 @@ async function sendNotificationsForGame(
     }
 
     // push_logs 기록 (PUSH-05)
-    const { error: logError } = await supabase.from('push_logs').insert({
+    const { error: logError } = await supabase.from('kbo_push_logs').insert({
       user_id: user.id,
       game_id: gameId,
       status,
@@ -143,7 +143,7 @@ async function updateNotifiedFlag(
       : { is_notified_cancel: true }
 
   const { error } = await supabase
-    .from('games')
+    .from('kbo_games')
     .update(updatePayload)
     .eq('id', gameId)
 

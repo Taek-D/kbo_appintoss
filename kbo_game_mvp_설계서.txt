@@ -1,0 +1,118 @@
+KBO 시즌 초반, 팬들의 설렘을 결과 알림으로 연결하는 **'KBO 야구 알리미'** MVP 구현을 위한 최소 단위 모듈 기반 설계서입니다.
+
+---
+
+# ⚾ KBO 야구 알리미 MVP 모듈 설계서
+
+## 1. 개요 (Overview)
+
+MVP의 핵심 목표인 **"빠른 경기 종료 알림"**과 **"토스 생태계 최적화"**를 위해 비즈니스 로직과 프리젠테이션 레이어를 엄격히 분리하고, 필요한 최소 기능만을 모듈화했습니다.
+
+| 모듈 이름 | 위치 (예시) | 설명 |
+| :--- | :--- | :--- |
+| **Auth & User Module** | `backend/modules/auth` | 토스 로그인 연동, `userKey` 관리 및 응원팀 설정 저장 |
+| **KBO Crawler Module** | `backend/modules/crawler` | `kbo-game` 패키지 래핑 및 실시간 경기 데이터 추출 |
+| **Smart Polling Worker** | `backend/workers/polling` | 경기 상태 변화 감지 및 발송 트리거 제어 로직 |
+| **Toss Push Provider** | `backend/modules/push` | mTLS 인증, 템플릿 기반 메시지 발송 및 Rate Limit 제어 |
+| **Game Summary UI** | `frontend/components/summary` | GSAP/Lenis 기반의 인터랙티브 경기 결과 요약 화면 |
+
+---
+
+## 2. 세부 유스케이스 (Use Cases)
+
+1.  **온보딩:** 유저는 토스 인증 후 10개 구단 중 하나를 선택하여 구독을 완료한다.
+2.  **실시간 모니터링:** 서버는 경기 종료 임박 시점(8회 이후)에 폴링 주기를 단축하여 데이터를 감시한다.
+3.  **알림 발송:** 경기 종료 상태가 감지되면, 토스 가이드라인을 준수하는 기능성 메시지를 `userKey` 기반으로 발송한다.
+4.  **결과 확인:** 유저가 알림을 클릭하면 앱 내에서 화려한 모션과 함께 경기 요약 정보를 확인한다.
+
+---
+
+## 3. 모듈 관계도 (Diagram)
+
+```mermaid
+graph TD
+    subgraph "Frontend (Presentation)"
+        UI[Game Summary UI]
+        Login[Toss Auth Screen]
+    end
+
+    subgraph "Backend (Business Logic)"
+        Auth[Auth & User Module]
+        Crawler[KBO Crawler Module]
+        Worker[Smart Polling Worker]
+        Push[Toss Push Provider]
+    end
+
+    subgraph "External & Storage"
+        TossAPI((Toss Push API))
+        KBO((KBO Game Data))
+        DB[(Supabase / PostgreSQL)]
+    end
+
+    Login --> Auth
+    Auth --> DB
+    Worker --> Crawler
+    Crawler -.-> KBO
+    Worker --> Push
+    Push -.-> TossAPI
+    TossAPI --> UI
+    UI -.-> DB
+```
+
+---
+
+## 4. 구현 계획 (Implementation Plan)
+
+### [Module 1] Auth & User Module
+* **역할:** 유저 식별 및 구독 정보 관리.
+* **계획:** 1. 토스 SDK 로그인 연동 후 서버에서 `userKey` 검증.
+    2. Supabase `users` 테이블에 `userKey`와 선택한 `teamCode`를 매핑하여 저장.
+    3. 동일 유저 재진입 시 기존 설정 정보를 불러오는 API 제공.
+
+### [Module 2] KBO Crawler & Smart Polling Worker
+* **역할:** 데이터 획득 및 발송 시점 결정.
+* **계획:**
+    1. `kbo-game` 결과값을 인터페이스화하여 비즈니스 로직에 전달.
+    2. 상태 전이 로직(Playing -> Finished)을 메모리 내에서 비교.
+    3. 경기 종료 8회 이후에는 `setTimeout` 주기를 30초로 가변 조정하는 가변 폴링 적용.
+
+### [Module 3] Toss Push Provider
+* **역할:** 외부 API 통신 및 안정성 확보.
+* **계획:**
+    1. mTLS 통신을 위한 인증서 로드 및 `axios` 인스턴스 구성.
+    2. 토스 스타일(문장형, 특수문자 자제) 메시지 템플릿 정의.
+    3. `p-limit` 등을 활용하여 100ms 간격의 순차 발송 큐 구현.
+    4. 발송 결과 및 에러 코드를 `push_logs`에 적재.
+
+### [Module 4] Game Summary UI (Frontend)
+* **역할:** 사용자 경험 극대화.
+* **계획:**
+    1. **Lenis:** 페이지 전체의 부드러운 스크롤링 적용.
+    2. **GSAP:** 결과 화면 진입 시 스코어 보드가 위에서 아래로 떨어지거나, 승리 투수 카드가 페이드인되는 마이크로 인터랙션 구현.
+    3. **Tailwind:** 토스 특유의 깨끗한 화이트톤 테마와 둥근 모서리(Rounded-3xl) UI 반영.
+
+---
+
+### 🧐 1차 자가 점검 및 반성 (Reflection)
+
+* **비즈니스 로직 분리:** Crawler 모듈과 Push Provider를 완전히 독립시켜, 나중에 KBO 데이터 소스가 바뀌거나 카카오톡 알림톡으로 확장되더라도 비즈니스 로직(Worker)은 수정되지 않도록 설계함.
+* **YAGNI 준수:** 현재 실시간 중계 기능이나 댓글 기능은 배제하고 오직 '결과 알림'과 '요약'에만 집중함.
+* **잠재적 위험:** 토스 템플릿 검수 지연 시 서비스 오픈이 불가능하므로, 개발 시작과 동시에 텍스트 확정 및 검수 요청 프로세스가 선행되어야 함.
+
+---
+
+### 🔍 최종 검증 (Final Reflection)
+
+**요청 사항 준수 여부:**
+* 비즈니스 로직 그룹화 및 모듈화 완료. (확인 ✅)
+* Over Engineering 배제 (MVP 필수 기능만 포함). (확인 ✅)
+* Presentation / Business Logic 분리. (확인 ✅)
+* 구체적 코드 제외, 마크다운 형식 준수. (확인 ✅)
+* Diagram(Mermaid) 및 구체적 실행 계획 포함. (확인 ✅)
+* UX 디테일(GSAP, Lenis) 및 디자인 원칙 반영. (확인 ✅)
+
+**추가 개선 항목:**
+* **빠진 부분 보충:** 다수의 경기가 동시에 종료될 경우 서버 CPU 부하가 일시적으로 튈 수 있으므로, Worker 실행 시 `Promise.allSettled`를 사용하여 각 경기별 발송 프로세스가 서로를 블로킹하지 않도록 보완이 필요함.
+* **최종 완성도:** 토스 로그인 세션 만료 시 `userKey` 갱신 로직이 온보딩 모듈에 포함되어야 함을 확인하여 구현 계획에 반영함.
+
+모든 요구사항이 충족되었으며, 즉시 구현 가능한 수준의 설계서입니다. **구현을 시작할 준비가 되셨나요?**

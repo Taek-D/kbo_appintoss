@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e83]:
+    - generic [ref=e84]:
+      - paragraph [ref=e85]: 내 팀 경기
+      - 'button "SSG 3 : 5 KIA" [ref=e87] [cursor=pointer]':
+        - generic [ref=e88]:
+          - generic [ref=e90]: SSG
+          - generic [ref=e91]:
+            - generic [ref=e92]: "3"
+            - generic [ref=e93]: ":"
+            - generic [ref=e94]: "5"
+          - generic [ref=e96]: KIA
+    - generic [ref=e97]:
+      - paragraph [ref=e98]: 다른 경기
+      - generic [ref=e99]:
+        - 'button "NC 다이노스 1 : 2 LG 트윈스" [ref=e100]':
+          - generic [ref=e101]:
+            - generic [ref=e103]: NC 다이노스
+            - generic [ref=e104]:
+              - generic [ref=e105]: "1"
+              - generic [ref=e106]: ":"
+              - generic [ref=e107]: "2"
+            - generic [ref=e109]: LG 트윈스
+        - button "한화 이글스 시간 미정 KT 위즈" [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e113]: 한화 이글스
+            - generic [ref=e115]: 시간 미정
+            - generic [ref=e117]: KT 위즈

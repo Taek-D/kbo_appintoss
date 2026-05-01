@@ -1,0 +1,42 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - heading "어느 팀을 응원하시나요?" [level=1] [ref=e5]
+      - paragraph [ref=e6]: 선택한 팀의 경기가 끝나면 즉시 알려드릴게요.
+    - radiogroup "응원팀 선택" [ref=e7]:
+      - radio "KIA 타이거즈" [ref=e8]:
+        - generic [ref=e9]: 🐯
+        - generic [ref=e10]: KIA 타이거즈
+      - radio "KT 위즈" [ref=e11]:
+        - generic [ref=e12]: 🧙
+        - generic [ref=e13]: KT 위즈
+      - radio "LG 트윈스" [ref=e14]:
+        - generic [ref=e15]: 👯
+        - generic [ref=e16]: LG 트윈스
+      - radio "NC 다이노스" [ref=e17]:
+        - generic [ref=e18]: 🦖
+        - generic [ref=e19]: NC 다이노스
+      - radio "SSG 랜더스" [ref=e20]:
+        - generic [ref=e21]: 🚀
+        - generic [ref=e22]: SSG 랜더스
+      - radio "두산 베어스" [ref=e23]:
+        - generic [ref=e24]: 🐻
+        - generic [ref=e25]: 두산 베어스
+      - radio "롯데 자이언츠" [ref=e26]:
+        - generic [ref=e27]: 🗽
+        - generic [ref=e28]: 롯데 자이언츠
+      - radio "삼성 라이온즈" [ref=e29]:
+        - generic [ref=e30]: 🦁
+        - generic [ref=e31]: 삼성 라이온즈
+      - radio "키움 히어로즈" [ref=e32]:
+        - generic [ref=e33]: 🦸
+        - generic [ref=e34]: 키움 히어로즈
+      - radio "한화 이글스" [ref=e35]:
+        - generic [ref=e36]: 🦅
+        - generic [ref=e37]: 한화 이글스
+    - generic [ref=e38]:
+      - button "응원팀을 먼저 선택해주세요" [disabled] [ref=e39]: 응원팀을 선택해주세요
+      - paragraph [ref=e40]: 응원팀은 언제든지 다시 바꿀 수 있어요.

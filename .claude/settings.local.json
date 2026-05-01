@@ -34,7 +34,9 @@
       "Bash(pnpm add*)",
       "Bash(npx supabase*)",
       "Bash(npx prisma*)",
-      "Bash(npx vitest*)"
+      "Bash(npx vitest*)",
+      "Bash(mv apps-in-toss-fullstack-templates:*)",
+      "Bash(rm -rf miniapp/.git)"
     ],
     "deny": [
       "Bash(rm -rf /)",
