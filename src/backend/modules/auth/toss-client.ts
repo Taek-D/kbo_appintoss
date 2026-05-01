@@ -179,7 +179,9 @@ export async function getTossUserKey(accessToken: string): Promise<TossUserInfo>
   const parsed = TossUserInfoSchema.safeParse(envelope.data.success)
   if (!parsed.success) {
     logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 유저 success 스키마 실패')
-    throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
+    throw new Error(
+      `토스 유저 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(envelope.data.success).slice(0, 400)}`,
+    )
   }
   return parsed.data
 }
