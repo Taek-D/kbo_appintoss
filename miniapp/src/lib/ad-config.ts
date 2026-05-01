@@ -2,18 +2,16 @@
  * F012: 광고 설정 상수.
  *
  * 개발 환경에서는 테스트 AD Group ID를 사용하고,
- * 운영 환경에서는 콘솔에서 발급받은 실제 ID로 교체한다.
- *
- * TODO(출시 전): BANNER, INTERSTITIAL에 운영 AD Group ID 입력.
+ * 운영 환경(production build)에서는 앱인토스 콘솔에서 발급받은 실제 ID를 사용한다.
  */
 
 export const AD_GROUP_IDS = {
   BANNER: import.meta.env.DEV
     ? "ait-ad-test-banner-id"
-    : "ait-ad-test-banner-id", // TODO: 운영 ID로 교체
+    : "ait.v2.live.2cd5923dde384ef9",
   INTERSTITIAL: import.meta.env.DEV
     ? "ait-ad-test-interstitial-id"
-    : "ait-ad-test-interstitial-id", // TODO: 운영 ID로 교체
+    : "ait.v2.live.b0df474e0594482e",
 } as const;
 
 export const AD_CONFIG = {
