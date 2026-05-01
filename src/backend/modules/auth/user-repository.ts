@@ -100,28 +100,35 @@ export async function updateTeamCode(userId: string, teamCode: TeamCode): Promis
     .from('kbo_users')
     .update({ team_code: parsed.data, subscribed: true })
     .eq('id', userId)
+    .select()
+    .single()
 
   if (error) {
     logger.error({ error, userId, teamCode }, 'updateTeamCode 실패')
     throw new Error(`팀 코드 업데이트 실패: ${error.message}`)
   }
 
-  return data as unknown as User
+  return data as User
 }
 
 /**
  * 유저의 구독 상태를 업데이트한다 [SUB-01]
+ * 갱신된 User 레코드를 반환하여 클라이언트 캐시 동기화에 사용한다.
  */
-export async function updateSubscription(userId: string, subscribed: boolean): Promise<void> {
+export async function updateSubscription(userId: string, subscribed: boolean): Promise<User> {
   const supabase = await createServerSupabaseClient()
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('kbo_users')
     .update({ subscribed })
     .eq('id', userId)
+    .select()
+    .single()
 
   if (error) {
     logger.error({ error, userId, subscribed }, 'updateSubscription 실패')
     throw new Error(`구독 상태 업데이트 실패: ${error.message}`)
   }
+
+  return data as User
 }

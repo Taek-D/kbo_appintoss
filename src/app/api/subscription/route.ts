@@ -111,14 +111,17 @@ export async function DELETE(request: NextRequest) {
 
     // TODO: 토스 인증 연동 후 제거 — 게스트는 쿠키 삭제
     if (userId === 'guest') {
-      const res = NextResponse.json({ success: true })
+      const res = NextResponse.json({
+        success: true,
+        user: { id: 'guest', team_code: null, subscribed: false },
+      })
       res.cookies.delete('guest_team')
       return res
     }
 
-    await updateSubscription(userId, false)
+    const user = await updateSubscription(userId, false)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, user })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : '알 수 없는 오류'
     logger.error({ error: message }, 'DELETE /api/subscription 오류')
