@@ -12,7 +12,6 @@ import {
   type Game,
 } from "../lib/games";
 import { findTeam, isTeamCode } from "../lib/teams";
-import { Switch } from "@/components/ui/switch";
 import {
   BRAND_COLOR,
   TEXT_STRONG,
@@ -245,7 +244,7 @@ function Skeleton() {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, toggleSubscription, isTogglingSubscription, toggleSubscriptionError } = useAuth();
+  const { user } = useAuth();
   const { games, isLoading, error, refetch } = useTodayGames();
 
   const myTeamCode = user?.team_code ?? null;
@@ -255,19 +254,6 @@ export default function Home() {
     if (!isTeamCode(myTeamCode)) return null;
     return findTeam(myTeamCode);
   }, [myTeamCode]);
-
-  const { myTeamGames, otherGames } = useMemo(() => {
-    const mine: Game[] = [];
-    const others: Game[] = [];
-    for (const game of games) {
-      if (isMyTeamGame(game, myTeamCode)) {
-        mine.push(game);
-      } else {
-        others.push(game);
-      }
-    }
-    return { myTeamGames: mine, otherGames: others };
-  }, [games, myTeamCode]);
 
   const handleNavigateDetail = (gameId: string) => {
     navigate(`/game/${gameId}`);
@@ -297,55 +283,6 @@ export default function Home() {
           </h1>
         )}
       </section>
-
-      {/* F011: 알림 구독 토글 카드 */}
-      {user !== null && user.team_code !== null && (
-        <section
-          className="mb-4 flex items-center justify-between rounded-2xl px-4 py-3"
-          style={{ background: SURFACE_ELEVATED }}
-        >
-          <div className="flex items-center gap-3">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[18px]"
-              style={{ background: user.subscribed ? LIVE_BG : grey100 }}
-              aria-hidden="true"
-            >
-              {user.subscribed ? "🔔" : "🔕"}
-            </span>
-            <div>
-              <p className="text-[14px] font-semibold" style={{ color: TEXT_STRONG }}>
-                경기 종료 알림
-              </p>
-              <p className="text-[12px]" style={{ color: user.subscribed ? LIVE_COLOR : TEXT_WEAK }}>
-                {user.subscribed ? "알림을 받고 있어요" : "알림이 꺼져 있어요"}
-              </p>
-            </div>
-          </div>
-          <Switch
-            checked={user.subscribed}
-            onCheckedChange={(checked) => toggleSubscription(checked)}
-            disabled={isTogglingSubscription}
-            aria-label="경기 종료 알림"
-          />
-        </section>
-      )}
-      {toggleSubscriptionError !== null && (
-        <p
-          className="mb-4 text-center text-[13px]"
-          style={{ color: ERROR_COLOR }}
-          role="alert"
-        >
-          {toggleSubscriptionError}
-        </p>
-      )}
-      {user !== null && user.team_code !== null && !user.subscribed && (
-        <p
-          className="mb-4 text-center text-[12px]"
-          style={{ color: TEXT_WEAK }}
-        >
-          알림을 끄면 경기 종료 소식을 놓칠 수 있어요
-        </p>
-      )}
 
       {/* 본문: 로딩 / 에러 / 빈 상태 / 경기 목록 */}
       <section className="flex flex-1 flex-col gap-6">
@@ -389,49 +326,18 @@ export default function Home() {
             </p>
           </div>
         ) : (
-          <>
-            {myTeamGames.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <h2
-                  className="text-[13px] font-semibold"
-                  style={{ color: BRAND_COLOR }}
-                >
-                  내 팀 경기
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {myTeamGames.map((game) => (
-                    <GameRow
-                      key={game.id}
-                      game={game}
-                      myTeamCode={myTeamCode}
-                      onNavigate={handleNavigateDetail}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {otherGames.length > 0 && (
-              <div className="flex flex-col gap-3">
-                <h2
-                  className="text-[13px] font-semibold"
-                  style={{ color: TEXT_WEAK }}
-                >
-                  {myTeamGames.length > 0 ? "다른 경기" : "오늘의 경기"}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {otherGames.map((game) => (
-                    <GameRow
-                      key={game.id}
-                      game={game}
-                      myTeamCode={myTeamCode}
-                      onNavigate={handleNavigateDetail}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+          // 통합 리스트: 시간 순 그대로(서버 정렬 사용). 응원팀 경기는
+          // GameRow 내부 isMine 강조(BRAND 테두리 + boxShadow + "내 팀" 라벨).
+          <div className="flex flex-col gap-3">
+            {games.map((game) => (
+              <GameRow
+                key={game.id}
+                game={game}
+                myTeamCode={myTeamCode}
+                onNavigate={handleNavigateDetail}
+              />
+            ))}
+          </div>
         )}
       </section>
 
