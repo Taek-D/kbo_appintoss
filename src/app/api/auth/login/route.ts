@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
       }
     }
     logger.error({ error: message, stack, causeInfo }, '로그인 처리 중 오류')
-    return NextResponse.json({ error: '서버 오류가 발생했습니다' }, { status: 500 })
+    // 클라이언트에 실제 사유를 노출 (Vercel runtime logs가 truncate되는 환경 대응).
+    // 프로덕션 노출되어도 OAuth/DB 비밀은 메시지에 포함되지 않는다.
+    return NextResponse.json(
+      { error: `서버오류: ${message.slice(0, 400)}` },
+      { status: 500 }
+    )
   }
 }

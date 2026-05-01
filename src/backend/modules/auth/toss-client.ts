@@ -4,48 +4,31 @@ import { logger } from '@/lib/logger'
 import type { TossAuthResponse, TossReferrer, TossUserInfo } from '@/types/toss'
 
 /**
- * 토스 파트너 API는 공통 envelope 구조로 응답한다.
- *   성공: { resultType: 'SUCCESS', success: <data>, error: null }
- *   실패: { resultType: 'FAIL', success: null, error: { errorCode, reason, ... } }
- * HTTP는 대부분 200이고, 성공/실패는 resultType으로 구분한다.
+ * 토스 파트너 API 응답 처리.
+ *
+ * 응답 형식이 두 가지가 혼재한다:
+ *   1) Envelope: { resultType: 'SUCCESS'|'FAIL', success: <data>|null, error: {...}|null }
+ *   2) Flat:     <data> 자체 (해지해 등 참조 구현이 사용)
+ *
+ * unwrapTossResponse가 둘 다 받아들이고, 핵심 데이터(success or rawData)를 반환한다.
+ * FAIL인 경우 errorCode/reason을 추출해 throw.
+ *
+ * userKey 등 일부 필드는 number로 올 수 있어 z.coerce.string()으로 강제 변환한다.
  */
-const TossErrorSchema = z.object({
-  errorCode: z.string(),
-  reason: z.string().optional(),
-  errorType: z.number().optional(),
-})
-
-const TossEnvelopeSchema = z.object({
-  resultType: z.enum(['SUCCESS', 'FAIL']),
-  success: z.unknown().nullable().optional(),
-  error: TossErrorSchema.nullable().optional(),
-})
 
 const TossAuthSuccessSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
-  // 토스는 실무상 'Bearer'/'bearer' 둘 다 가능 — literal 대신 string 관대 수용
   tokenType: z.string(),
   expiresIn: z.number(),
 })
 
-// 실제 토스 login-me 응답:
-//   success.userKey = number (예: 702438137)
-//   success는 scope/name/agreedTerms/phone/... 등 다른 필드도 함께 포함하지만,
-//   우리는 userKey만 사용하므로 나머지는 z.object passthrough로 무시한다.
 const TossUserInfoSchema = z.object({
   userKey: z.coerce.string(),
 })
 
 const TOSS_API_BASE = 'https://apps-in-toss-api.toss.im'
 
-/**
- * 토스 파트너 API는 mTLS 클라이언트 인증서를 요구한다.
- * TOSS_MTLS_CERT / TOSS_MTLS_KEY 환경변수에 base64 인코딩된 PEM 쌍을 둔다.
- *
- * Node 22의 global fetch(undici)는 https.Agent의 cert/key를 사용하지 않으므로,
- * node:https.request로 직접 요청한다.
- */
 let _agent: https.Agent | null = null
 
 function getMtlsAgent(): https.Agent {
@@ -100,6 +83,39 @@ function mtlsRequest(
   })
 }
 
+function safeParse(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 토스 응답에서 핵심 데이터를 추출한다.
+ * Envelope이면 resultType/error 검사 후 success 반환,
+ * Flat이면 그대로 반환.
+ *
+ * FAIL 케이스는 throw('토스 인증 실패 (...)') — login route catch에서 401로 변환된다.
+ */
+function unwrapTossResponse(rawData: unknown, kind: '인증' | '유저 조회'): unknown {
+  if (rawData && typeof rawData === 'object') {
+    const obj = rawData as Record<string, unknown>
+    const isEnvelope = 'resultType' in obj || 'success' in obj
+    if (isEnvelope) {
+      const resultType = obj.resultType
+      const errorObj = obj.error as { errorCode?: unknown; reason?: unknown } | null | undefined
+      if (resultType === 'FAIL' || (errorObj && errorObj.errorCode)) {
+        const code = String(errorObj?.errorCode ?? 'UNKNOWN')
+        const reason = String(errorObj?.reason ?? '원인 미상')
+        throw new Error(`토스 ${kind} 실패 (${code}): ${reason}`)
+      }
+      return obj.success ?? rawData
+    }
+  }
+  return rawData
+}
+
 /**
  * 토스 OAuth2 authCode를 accessToken으로 교환한다 [AUTH-01]
  * POST /api-partner/v1/apps-in-toss/user/oauth2/generate-token
@@ -127,28 +143,16 @@ export async function exchangeAuthCode(
   }
 
   const rawData = safeParse(response.body)
-  const envelope = TossEnvelopeSchema.safeParse(rawData)
-  if (!envelope.success) {
-    logger.error({ errors: envelope.error.issues, rawData }, '토스 envelope 검증 실패')
-    throw new Error('토스 API 응답 형식이 올바르지 않습니다')
-  }
-
-  if (envelope.data.resultType === 'FAIL' || !envelope.data.success) {
-    const errorCode = envelope.data.error?.errorCode ?? 'UNKNOWN'
-    const reason = envelope.data.error?.reason ?? '원인 미상'
-    logger.warn({ errorCode, reason }, '토스 authCode 교환 실패(FAIL)')
-    throw new Error(`토스 인증 실패 (${errorCode}): ${reason}`)
-  }
-
-  const parsed = TossAuthSuccessSchema.safeParse(envelope.data.success)
+  const data = unwrapTossResponse(rawData, '인증')
+  const parsed = TossAuthSuccessSchema.safeParse(data)
   if (!parsed.success) {
-    logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 success 스키마 실패')
-    throw new Error('토스 API 응답 형식이 올바르지 않습니다')
+    logger.error({ errors: parsed.error.issues, rawData }, '토스 인증 응답 스키마 실패')
+    throw new Error(
+      `토스 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(rawData).slice(0, 300)}`,
+    )
   }
   return parsed.data
 }
-
-
 
 /**
  * accessToken으로 토스 유저 정보(userKey)를 조회한다 [AUTH-01]
@@ -169,31 +173,13 @@ export async function getTossUserKey(accessToken: string): Promise<TossUserInfo>
   }
 
   const rawData = safeParse(response.body)
-  const envelope = TossEnvelopeSchema.safeParse(rawData)
-  if (!envelope.success) {
-    logger.error({ errors: envelope.error.issues, rawData }, '토스 유저 envelope 검증 실패')
-    throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
-  }
-
-  if (envelope.data.resultType === 'FAIL' || !envelope.data.success) {
-    const errorCode = envelope.data.error?.errorCode ?? 'UNKNOWN'
-    const reason = envelope.data.error?.reason ?? '원인 미상'
-    logger.warn({ errorCode, reason }, '토스 userKey 조회 실패(FAIL)')
-    throw new Error(`토스 유저 조회 실패 (${errorCode}): ${reason}`)
-  }
-
-  const parsed = TossUserInfoSchema.safeParse(envelope.data.success)
+  const data = unwrapTossResponse(rawData, '유저 조회')
+  const parsed = TossUserInfoSchema.safeParse(data)
   if (!parsed.success) {
-    logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 유저 success 스키마 실패')
-    throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
+    logger.error({ errors: parsed.error.issues, rawData }, '토스 유저 응답 스키마 실패')
+    throw new Error(
+      `토스 유저 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(rawData).slice(0, 300)}`,
+    )
   }
   return parsed.data
-}
-
-function safeParse(text: string): unknown {
-  try {
-    return JSON.parse(text)
-  } catch {
-    return {}
-  }
 }
