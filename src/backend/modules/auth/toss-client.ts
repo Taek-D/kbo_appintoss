@@ -29,8 +29,12 @@ const TossAuthSuccessSchema = z.object({
   expiresIn: z.number(),
 })
 
+// 실제 토스 login-me 응답:
+//   success.userKey = number (예: 702438137)
+//   success는 scope/name/agreedTerms/phone/... 등 다른 필드도 함께 포함하지만,
+//   우리는 userKey만 사용하므로 나머지는 z.object passthrough로 무시한다.
 const TossUserInfoSchema = z.object({
-  userKey: z.string(),
+  userKey: z.coerce.string(),
 })
 
 const TOSS_API_BASE = 'https://apps-in-toss-api.toss.im'
@@ -144,6 +148,8 @@ export async function exchangeAuthCode(
   return parsed.data
 }
 
+
+
 /**
  * accessToken으로 토스 유저 정보(userKey)를 조회한다 [AUTH-01]
  * GET /api-partner/v1/apps-in-toss/user/oauth2/login-me
@@ -179,9 +185,7 @@ export async function getTossUserKey(accessToken: string): Promise<TossUserInfo>
   const parsed = TossUserInfoSchema.safeParse(envelope.data.success)
   if (!parsed.success) {
     logger.error({ errors: parsed.error.issues, success: envelope.data.success }, '토스 유저 success 스키마 실패')
-    throw new Error(
-      `토스 유저 API 응답 형식이 올바르지 않습니다: ${JSON.stringify(envelope.data.success).slice(0, 400)}`,
-    )
+    throw new Error('토스 유저 API 응답 형식이 올바르지 않습니다')
   }
   return parsed.data
 }
