@@ -1,7 +1,0 @@
-{
-  "tool_name": "WebFetch",
-  "tool_input_preview": "{\"url\":\"https://developers-apps-in-toss.toss.im/bedrock/framework/login/develop.html\",\"prompt\":\"서버에서 authorizationCode를 accessToken으로 교환하는 API의 정확한 전체 URL(스킴+도메인+경로)을 알려주세요. 그리고 userKey 조회 API의 전체 URL...",
-  "error": "Request failed with status code 404",
-  "timestamp": "2026-04-23T06:34:30.375Z",
-  "retry_count": 1
-}

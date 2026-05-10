@@ -24,6 +24,16 @@
 
 # bkit agent state (runtime-mutable)
 /miniapp/.bkit/
+/.bkit/
+
+# OMC runtime state (memory, sessions, state, checkpoints)
+/.omc/
+
+# Claude Code agent worktrees (runtime-only, never committed)
+/.claude/worktrees/
+
+# AIT build artifacts
+*.ait
 
 # misc
 .DS_Store
