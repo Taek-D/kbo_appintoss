@@ -329,7 +329,113 @@
   - 콜백 URL 등록 (UNLINK, WITHDRAWAL_TERMS, WITHDRAWAL_TOSS)
   - 프로덕션 ALLOWED_ORIGINS env에 miniapp 도메인 주입
 
-## 프로젝트 완료 — 전체 12/12 기능 구현 완료 🎉
+## 출시 후 추가 기능 (Phase 2)
+
+### Session 13 — 2026-05-01 (F013 구현 — 알림 세분화 토글)
+- 배경: PRD-013 — 사용자가 경기 종료 알림 / 경기 취소 알림을 개별로 켜고 끌 수 있게 함.
+  기존에는 마스터 스위치(subscribed) 하나로만 전체 ON/OFF 통제 → 너무 무딘 컨트롤.
+- 결정: start 알림은 백엔드 발송 로직이 없으므로 이번 라운드 제외.
+  notify_finish / notify_cancel 두 컬럼만 추가. 게스트(id='guest')는 인메모리 응답만 반환.
+- 백엔드 구현 (commit 1934622):
+  * supabase/migrations/20260512000000_user_notify_prefs.sql 신규
+    - ALTER TABLE public.kbo_users ADD COLUMN notify_finish/notify_cancel boolean NOT NULL DEFAULT true
+    - 기존 사용자는 모두 ON으로 시작(subscribed=true와 동등한 UX)
+  * src/types/user.ts: User 타입에 notify_finish/notify_cancel 추가 + NotificationPreferences 타입 신규
+  * src/backend/modules/auth/user-repository.ts: updateNotificationPrefs(userId, prefs) 신규
+    - prefs.notify_finish/notify_cancel 둘 다 undefined면 throw (이중 안전망)
+    - 정의된 필드만 update 페이로드에 포함 (부분 갱신)
+  * src/app/api/notification-preferences/route.ts 신규 (PATCH):
+    - Zod refine으로 "최소 한 필드"는 반드시 포함 검증
+    - 게스트는 서버 저장 없이 인메모리 응답
+    - subscription/route.ts와 동일한 extractUserId 패턴
+  * notification-service.ts: 발송 SQL에 .eq(flagField, true) 추가
+    - 경기 종료: subscribed AND notify_finish 모두 true인 사용자에게만 발송
+    - 경기 취소: subscribed AND notify_cancel 모두 true인 사용자에게만 발송
+- 클라이언트 구현 (commit 654161):
+  * miniapp/src/hooks/useAuth.ts:
+    - AuthUser 타입에 notify_finish/notify_cancel 추가
+    - patchNotificationPrefs API 래퍼 + updatePrefsMutation
+    - Optimistic Update — onMutate에서 토글 즉시 반영, onError 시 이전 상태로 롤백
+    - updateNotificationPrefs / isUpdatingPrefs / updatePrefsError 노출
+  * miniapp/src/pages/Settings.tsx: 알림 카드 1개 → 2개 토글 + 마스터 텍스트 버튼으로 재구성
+    - "경기 종료 알림" 토글, "경기 취소 알림" 토글 (Optimistic 갱신)
+    - 하단 텍스트 버튼: "모든 알림 끄기/켜기" (마스터 스위치 = subscribed)
+    - 가이드 텍스트: "알림을 끄면 경기 소식을 놓칠 수 있어요"
+- d2a5367: 테스트 테이블명 kbo_* prefix 정렬 + update().eq().select() mock 보강 + toss-client mTLS skip
+  - F013 백엔드 테스트가 prefix 미정렬로 일부 실패 → kbo_* prefix로 일괄 동기화
+  - update mock이 .eq().select() 체인 미지원 → 보강
+  - toss-client mTLS는 테스트 환경에서 skip 처리 (dev 환경에서만 mTLS 검증)
+- 검증: 전체 91 tests pass / 4 skipped, 타입체크 0 errors.
+- 다음 작업: F014 (응원팀 시즌 위젯, PRD-014).
+
+### Session 14 — 2026-05-11 (F014 구현 — 응원팀 시즌 위젯 + 마이그레이션 정리)
+- 배경: PRD-014 — KBO는 월요일 휴식 + 우천 취소로 빈 화면이 주 1~2일 발생.
+  "오늘 경기 없어요" 텍스트만 노출되어 즉시 이탈 → 재방문 간격 ↑.
+  응원팀 누적 전적(승/패/무) + 순위 + 다음 경기 D-Day를 홈 상단에 상시 노출하여
+  빈 상태에서도 의미 있는 정보를 제공한다.
+- 결정: DB 변경 없음 — kbo_games 테이블만으로 1쿼리 집계.
+  team-rank는 10팀 일괄 계산(1쿼리)로 효율적. 응원팀 컬러는 순위/승수/카운트다운에만 적용(배경 ❌).
+  카운트다운은 1분 tick(과도한 애니메이션 ❌). 캐싱 5분 TTL.
+- 백엔드 구현 (src/):
+  * src/types/season.ts 신규: SeasonStats / NextGameSummary / LastGameSummary / TeamWidget +
+    SEASON 상수(year=2026, startDate=2026-03-23, endDate=2026-10-31)
+  * src/backend/modules/season/season-stats.ts: computeSeasonStats(teamCode)
+    - kbo_games WHERE status='finished' AND game_date BETWEEN season AND (home_team OR away_team)
+    - 메모리에서 wins/losses/draws 집계, winRate = wins/(wins+losses) (무승부 제외)
+  * src/backend/modules/season/team-rank.ts: computeAllTeamRanks()
+    - 전 KBO 10팀 일괄 계산(1쿼리)
+    - 정렬: 승수 desc → 패수 asc, 동률은 같은 rank
+    - gamesBehind = ((1위 승 − 자신 승) + (자신 패 − 1위 패)) / 2 (Math.max(0, ...))
+  * src/backend/modules/season/next-last-game.ts:
+    - fetchNextGame: scheduled + started_at IS NOT NULL → 가장 가까운 1건 + msUntilStart 계산
+    - fetchLastGame: finished → 가장 최근 1건 + myTeamWon(무승부면 null)
+  * src/backend/modules/season/widget-cache.ts: in-memory Map<teamCode, {value, expiresAt}>
+    - 5분 TTL, Vercel serverless 인스턴스 단위
+  * src/app/api/teams/[teamCode]/widget/route.ts 신규 (GET):
+    - Zod.enum(KBO_TEAM_CODES) 검증
+    - 캐시 hit이면 즉시 반환, miss면 3쿼리 병렬 실행(Promise.all)
+    - TeamWidget 응답 후 setCached
+  * 단위 테스트 12건 신규 (7 + 5)
+- 클라이언트 구현 (miniapp/src/):
+  * lib/team-widget.ts: TeamWidget 타입 + fetchTeamWidget API + formatter 3개
+    - formatWinRate(0.542) → ".542" (KBO 관습)
+    - formatGamesBehind(2.5, rank) → "2.5" / 1위는 "—"
+    - formatCountdown(ms) → "곧 시작" / "X분" / "X시간 Y분" / "D일 H시간"
+  * hooks/useTeamWidget.ts: React Query 5분 staleTime, teamCode null이면 enabled:false
+  * components/TeamSeasonWidget.tsx: 응원팀 컬러는 순위 숫자 + 승수 숫자에만 적용
+    - 상단 팀명+순위, 중단 전적+승률+게임차, 하단 다음 경기 한 줄
+  * components/LastGameCard.tsx: 어제 결과 카드, 탭하면 /game/:id로 이동
+    - 승/패/무 라벨 + 응원팀 점수 강조
+  * components/CountdownToNextGame.tsx: setTick 패턴(eslint react-hooks/set-state-in-effect 준수)
+    - useEffect는 setInterval만, ms는 매 렌더에 computeMsUntilStart 호출
+    - 1분 간격 tick(과도한 애니메이션 ❌)
+  * pages/Home.tsx 통합:
+    - 응원팀 선택 + widget 데이터 있으면 상단에 TeamSeasonWidget 카드
+    - 빈 상태(games.length === 0)일 때 응원팀이 있으면 LastGameCard + CountdownToNextGame
+    - 응원팀 없으면 기존 빈 상태 메시지 유지
+    - "오늘 경기는요" / "오늘은 쉬는 날" 헤드라인 분기
+- 마이그레이션 정리 (병행 작업):
+  * 배경: a34fbb9에서 supabase MCP apply_migration으로 kbo_users / kbo_games / kbo_push_logs를
+    신규 생성했으나 supabase/migrations/ 파일을 함께 갱신하지 않아 로컬 마이그레이션이
+    prod 상태와 불일치 — 20260512는 kbo_users를 ALTER하지만 20260404/20260405는 users/games 참조.
+  * 20260404000000_init_schema.sql: 테이블 3개 + 인덱스 3개 + 트리거 2개 전부 kbo_* prefix로 갱신
+    - public.kbo_users / kbo_games / kbo_push_logs
+    - idx_kbo_games_date_status / idx_kbo_users_toss_user_key / idx_kbo_push_logs_game_id
+    - update_kbo_users_updated_at / update_kbo_games_updated_at 트리거
+  * 20260405000000_game_notified_flags.sql: kbo_games ALTER + uq_kbo_games_date_teams 제약명
+- 검증 결과 (F001~F014 누적):
+  * 백엔드 typecheck: 0 errors ✅
+  * miniapp typecheck: 0 errors ✅
+  * 전체 테스트: 91 passed / 4 skipped (신규 12개 포함)
+  * F014 신규 파일 lint: 0 errors (기존 pre-existing 워닝은 범위 밖)
+- SDK Safety: 이번 세션은 @apps-in-toss/web-framework 직접 호출 없음
+  (서버 데이터 + React Query + UI 렌더링만)
+- 위임 목록:
+  - 전체 KBO 순위표 10팀 표시 → F015 후보 (PRD-014 §3.2)
+  - 시즌 그래프/차트 / 연승·연패 표시 → out-of-scope
+- 다음 작업: PRD에 따른 추가 기능 또는 운영 측정(WAU/체류율).
+
+## 프로젝트 완료 — 전체 14/14 기능 구현 완료 🎉
 
 ### Session 7 — 2026-04-12 (F007 구현)
 - 조사: apps-in-toss-examples-robin/with-share-link 패턴 파악
