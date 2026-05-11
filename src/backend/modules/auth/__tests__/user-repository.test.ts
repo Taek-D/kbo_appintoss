@@ -44,7 +44,13 @@ vi.mock('@/lib/supabase/server', () => ({
           return {
             eq: (...eqArgs: unknown[]) => {
               mockEq(...eqArgs)
-              return mockEq()
+              // 실제 코드: .update().eq().select().single()
+              // mockEq를 resolved value 컨테이너로 사용해 기존 테스트가 호환되도록 한다.
+              return {
+                select: () => ({
+                  single: () => mockEq(),
+                }),
+              }
             },
           }
         },
@@ -66,6 +72,9 @@ const mockUser: User = {
   toss_user_key: 'toss-key-abc',
   team_code: null,
   subscribed: false,
+  // F013: 알림 종류별 선호 디폴트 (DB 디폴트와 일치)
+  notify_finish: true,
+  notify_cancel: true,
   created_at: '2026-04-05T00:00:00Z',
   updated_at: '2026-04-05T00:00:00Z',
 }
@@ -82,7 +91,7 @@ describe('user-repository', () => {
       const result = await upsertUser('toss-key-abc')
 
       expect(result).toEqual(mockUser)
-      expect(mockFrom).toHaveBeenCalledWith('users')
+      expect(mockFrom).toHaveBeenCalledWith('kbo_users')
       expect(mockUpsert).toHaveBeenCalledWith(
         expect.objectContaining({ toss_user_key: 'toss-key-abc' }),
         expect.objectContaining({ onConflict: 'toss_user_key' })
@@ -113,7 +122,7 @@ describe('user-repository', () => {
       const result = await getUserByTossKey('toss-key-abc')
 
       expect(result).toEqual(mockUser)
-      expect(mockFrom).toHaveBeenCalledWith('users')
+      expect(mockFrom).toHaveBeenCalledWith('kbo_users')
       expect(mockEq).toHaveBeenCalledWith('toss_user_key', 'toss-key-abc')
     })
 

@@ -72,15 +72,21 @@ function makeUser(id: string, tossKey: string) {
 
 /**
  * users 조회 체인 mock 설정:
- * from('users').select('id, toss_user_key').in('team_code', [...]).eq('subscribed', true)
+ * F013 이후 chain은 5단계 — .select().in().eq('subscribed', true).eq(flagField, true).
+ * from('kbo_users')
+ *   .select('id, toss_user_key')
+ *   .in('team_code', [...])
+ *   .eq('subscribed', true)
+ *   .eq('notify_finish' | 'notify_cancel', true)
  * -> { data: users, error: null }
  */
 function setupUsersQuery(users: Array<{ id: string; toss_user_key: string }>) {
-  const usersEq = vi.fn().mockResolvedValueOnce({ data: users, error: null })
-  const usersIn = vi.fn().mockReturnValueOnce({ eq: usersEq })
+  const usersEqFlag = vi.fn().mockResolvedValueOnce({ data: users, error: null })
+  const usersEqSubscribed = vi.fn().mockReturnValueOnce({ eq: usersEqFlag })
+  const usersIn = vi.fn().mockReturnValueOnce({ eq: usersEqSubscribed })
   const usersSelect = vi.fn().mockReturnValueOnce({ in: usersIn })
   mockFrom.mockReturnValueOnce({ select: usersSelect })
-  return { usersSelect, usersIn, usersEq }
+  return { usersSelect, usersIn, usersEqSubscribed, usersEqFlag }
 }
 
 /**
@@ -127,7 +133,7 @@ describe('sendGameEndNotifications', () => {
     await vi.runAllTimersAsync()
     await promise
 
-    expect(mockFrom).toHaveBeenCalledWith('users')
+    expect(mockFrom).toHaveBeenCalledWith('kbo_users')
     expect(usersIn).toHaveBeenCalledWith('team_code', ['LG', 'KT'])
   })
 
@@ -303,9 +309,11 @@ describe('sendGameEndNotifications', () => {
     // 각 게임마다 users 조회 + push_logs insert + games update 순서로 from()이 호출됨
     // 총 6번 from()이 호출되어야 함 (2경기 × 3호출)
     // mockFrom을 동적으로 처리하도록 구성
+    // F013: 5단계 체인 — .select().in().eq().eq()
     const makeUsersChain = (users: Array<{ id: string; toss_user_key: string }>) => {
-      const eq = vi.fn().mockResolvedValue({ data: users, error: null })
-      const inFn = vi.fn().mockReturnValue({ eq })
+      const eqFlag = vi.fn().mockResolvedValue({ data: users, error: null })
+      const eqSubscribed = vi.fn().mockReturnValue({ eq: eqFlag })
+      const inFn = vi.fn().mockReturnValue({ eq: eqSubscribed })
       const select = vi.fn().mockReturnValue({ in: inFn })
       return { select }
     }
@@ -321,9 +329,9 @@ describe('sendGameEndNotifications', () => {
 
     // mockFrom이 table 이름에 따라 적절한 체인을 반환하도록 설정
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'users') return makeUsersChain([makeUser(table + '-uid', table + '-key')])
-      if (table === 'push_logs') return makeLogsChain()
-      if (table === 'games') return makeGamesChain()
+      if (table === 'kbo_users') return makeUsersChain([makeUser(table + '-uid', table + '-key')])
+      if (table === 'kbo_push_logs') return makeLogsChain()
+      if (table === 'kbo_games') return makeGamesChain()
       return {}
     })
 
@@ -339,9 +347,10 @@ describe('sendGameEndNotifications', () => {
     const t1 = makeTransition({ gameId: 'game-001', toStatus: 'finished' })
     const t2 = makeTransition({ gameId: 'game-002', toStatus: 'finished' })
 
-    // t1: DB error (users 조회 실패)
-    const errorEq = vi.fn().mockRejectedValueOnce(new Error('DB error'))
-    const errorIn = vi.fn().mockReturnValueOnce({ eq: errorEq })
+    // t1: DB error (users 조회 실패). F013: 5단계 체인 — 마지막 .eq()에서 reject.
+    const errorEqFlag = vi.fn().mockRejectedValueOnce(new Error('DB error'))
+    const errorEqSubscribed = vi.fn().mockReturnValueOnce({ eq: errorEqFlag })
+    const errorIn = vi.fn().mockReturnValueOnce({ eq: errorEqSubscribed })
     const errorSelect = vi.fn().mockReturnValueOnce({ in: errorIn })
     mockFrom.mockReturnValueOnce({ select: errorSelect })
 
@@ -374,8 +383,8 @@ describe('sendGameEndNotifications', () => {
     await vi.runAllTimersAsync()
     await promise
 
-    // mockFrom이 'users', 'push_logs', 'games' 순서로 3번 호출됨
-    expect(mockFrom).toHaveBeenNthCalledWith(3, 'games')
+    // mockFrom이 'kbo_users', 'kbo_push_logs', 'kbo_games' 순서로 3번 호출됨
+    expect(mockFrom).toHaveBeenNthCalledWith(3, 'kbo_games')
     expect(mockUpdate).toHaveBeenCalledWith({ is_notified_finish: true })
     expect(mockEq).toHaveBeenCalledWith('id', 'game-uuid-001')
   })

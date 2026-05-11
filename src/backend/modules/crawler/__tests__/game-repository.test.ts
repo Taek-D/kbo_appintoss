@@ -172,7 +172,7 @@ describe('syncGames', () => {
 
     await syncGames([makeCrawlerGame()])
 
-    expect(mockFrom).toHaveBeenCalledWith('games')
+    expect(mockFrom).toHaveBeenCalledWith('kbo_games')
     expect(mockSelect).toHaveBeenCalledWith('*')
     expect(mockEq).toHaveBeenCalledWith('game_date', TODAY_STR)
   })
