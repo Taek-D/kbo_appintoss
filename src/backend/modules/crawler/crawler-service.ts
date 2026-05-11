@@ -1,6 +1,7 @@
 import { getGame } from 'kbo-game'
 import { logger } from '@/lib/logger'
 import { mapKboStatusToDb } from './game-state-mapper'
+import { normalizeTeamCode } from './team-code-mapper'
 import type { CrawlerResult, CrawlerGame } from '@/types/crawler'
 
 /**
@@ -8,8 +9,16 @@ import type { CrawlerResult, CrawlerGame } from '@/types/crawler'
  * null(크롤링 실패)과 [](경기 없음)을 분리된 코드 경로로 처리한다 (DATA-01, DATA-04).
  */
 export async function fetchTodayGames(): Promise<CrawlerResult> {
+  return fetchGamesByDate(new Date())
+}
+
+/**
+ * kbo-game 패키지에서 특정 날짜의 경기 데이터를 수집한다.
+ * 백필(시즌 과거 데이터 채우기)에 사용한다.
+ */
+export async function fetchGamesByDate(date: Date): Promise<CrawlerResult> {
   try {
-    const games = await getGame(new Date())
+    const games = await getGame(date)
 
     if (games === null) {
       const error = new Error('kbo-game returned null')
@@ -17,17 +26,31 @@ export async function fetchTodayGames(): Promise<CrawlerResult> {
       return { success: false, error }
     }
 
-    const crawlerGames: CrawlerGame[] = games.map((game) => ({
-      kboGameId: game.id,
-      gameDate: formatDate(game.date),
-      homeTeam: game.homeTeam,
-      awayTeam: game.awayTeam,
-      status: mapKboStatusToDb(game.status),
-      homeScore: game.score?.home ?? 0,
-      awayScore: game.score?.away ?? 0,
-      currentInning: game.currentInning ?? 0,
-      startTime: game.startTime,
-    }))
+    // kbo-game의 raw 팀 이름(한글/영문 약어 혼재)을 시스템 TeamCode로 정규화한다.
+    // 매핑 불가 팀이 섞이면 해당 경기는 스킵하고 경고를 남긴다(전체 크롤링은 계속).
+    const crawlerGames: CrawlerGame[] = []
+    for (const game of games) {
+      const homeTeam = normalizeTeamCode(game.homeTeam)
+      const awayTeam = normalizeTeamCode(game.awayTeam)
+      if (homeTeam === null || awayTeam === null) {
+        logger.warn(
+          { rawHome: game.homeTeam, rawAway: game.awayTeam, gameId: game.id },
+          'fetchTodayGames: 팀 코드 매핑 실패 — 경기 스킵',
+        )
+        continue
+      }
+      crawlerGames.push({
+        kboGameId: game.id,
+        gameDate: formatDate(game.date),
+        homeTeam,
+        awayTeam,
+        status: mapKboStatusToDb(game.status),
+        homeScore: game.score?.home ?? 0,
+        awayScore: game.score?.away ?? 0,
+        currentInning: game.currentInning ?? 0,
+        startTime: game.startTime,
+      })
+    }
 
     return { success: true, games: crawlerGames }
   } catch (error) {

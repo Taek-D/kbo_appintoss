@@ -90,3 +90,64 @@ export async function syncGames(crawledGames: CrawlerGame[]): Promise<StateTrans
 
   return transitions
 }
+
+/**
+ * 시즌 과거 데이터 백필 전용 upsert.
+ *
+ * syncGames와의 차이:
+ *   - 상태 전이를 감지하지 않음(StateTransition 미반환) → 푸시 발송 0건
+ *   - started_at / finished_at을 NOW가 아니라 game_date 기반으로 파생
+ *     (lastGame 정렬용 finished_at이 NOW로 몰리면 시간 순이 깨지므로)
+ *
+ * 호출부는 보통 admin 엔드포인트(`/api/admin/backfill-season`)에서 일자 루프를 돈다.
+ * KBO 사이트 부하를 고려해 호출부에서 적절한 간격을 둔다.
+ */
+export async function backfillGames(crawledGames: CrawlerGame[]): Promise<number> {
+  if (crawledGames.length === 0) return 0
+
+  const supabase = await createServerSupabaseClient()
+  let upsertedCount = 0
+
+  for (const crawledGame of crawledGames) {
+    // game_date(YYYY-MM-DD) + startTime("HH:mm") 조합으로 KST started_at 구성
+    // startTime이 비어있으면 null 유지
+    const startedAt =
+      crawledGame.startTime && /^\d{2}:\d{2}$/.test(crawledGame.startTime)
+        ? `${crawledGame.gameDate}T${crawledGame.startTime}:00+09:00`
+        : null
+
+    // finished_at은 같은 날 22:00 KST로 고정(정렬 일관성 확보용 — 분초 단위 정확도 불필요)
+    const finishedAt =
+      crawledGame.status === 'finished'
+        ? `${crawledGame.gameDate}T22:00:00+09:00`
+        : null
+
+    const payload: Record<string, unknown> = {
+      game_date: crawledGame.gameDate,
+      home_team: crawledGame.homeTeam,
+      away_team: crawledGame.awayTeam,
+      status: crawledGame.status,
+      home_score: crawledGame.homeScore,
+      away_score: crawledGame.awayScore,
+      inning_data: null,
+      started_at: startedAt,
+      finished_at: finishedAt,
+    }
+
+    const { error: upsertError } = await supabase
+      .from('kbo_games')
+      .upsert(payload, { onConflict: 'game_date,home_team,away_team' })
+
+    if (upsertError) {
+      logger.error(
+        { err: upsertError, game: crawledGame },
+        'backfillGames: upsert 실패',
+      )
+      continue
+    }
+
+    upsertedCount += 1
+  }
+
+  return upsertedCount
+}
