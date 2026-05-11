@@ -2,7 +2,11 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useTodayGames } from "../hooks/useTodayGames";
+import { useTeamWidget } from "../hooks/useTeamWidget";
 import { BannerAd } from "../components/BannerAd";
+import { TeamSeasonWidget } from "../components/TeamSeasonWidget";
+import { LastGameCard } from "../components/LastGameCard";
+import { CountdownToNextGame } from "../components/CountdownToNextGame";
 import { AD_GROUP_IDS } from "../lib/ad-config";
 import {
   findTeamByRawCode,
@@ -29,12 +33,13 @@ import {
 
 /**
  * F005: 메인 경기 리스트 화면.
+ * F014: 응원팀 시즌 위젯 + 빈 상태 페이지 보강.
  *
  * 플로우:
  *   1. Intro/TeamSelect에서 login + team 선택 완료 후 /home으로 이동
- *   2. useTodayGames()가 /api/games/today 호출
- *   3. 응원팀 참여 경기와 나머지 경기를 섹션 분리로 렌더
- *   4. 종료된 경기(finished)만 탭 가능 — /game/:id 네비게이션
+ *   2. 응원팀 선택 시 → TeamSeasonWidget (시즌 누적 전적 + 다음 경기) 상단 노출
+ *   3. useTodayGames()가 /api/games/today 호출
+ *   4. 오늘 경기 없으면 → LastGameCard + CountdownToNextGame fallback (PRD-014 §4.2)
  *
  * 심사 규칙(NEVER/ALWAYS):
  *   - NEVER: 커스텀 헤더/백버튼 → NavigationBar는 F009에서 통합
@@ -42,19 +47,9 @@ import {
  *   - NEVER: alert/confirm/prompt → 에러는 인라인으로 노출
  *   - NEVER: 과도한 blinking/애니메이션 → playing 상태 점 1개만 부드러운 pulse
  *   - NEVER: 탭해도 반응 없는 버튼 → finished 아닌 경기는 onClick 미연결
- *   - ALWAYS: 경기 없는 날에도 의미 있는 가이드 메시지
- *
- * 디자인 노트:
- *   - Intro.tsx/TeamSelect.tsx와 동일한 인라인 + KOREAN_STACK 패턴 유지
- *   - 전역 디자인 토큰 교체는 F010(TDS)에서 수행
- *
- * F005 범위 밖(위임 이슈):
- *   - 경기 상세 본 구현 → F006 (현재는 placeholder 라우트만)
- *   - 응원팀 변경 진입점 → F010 또는 별도 UX 패스
- *   - 알림 on/off 토글 → F011
+ *   - ALWAYS: 경기 없는 날에도 의미 있는 가이드 메시지 (위젯 + 카운트다운)
  */
 
-/** 팀 코드 → 표시명. 미등록 코드는 raw 반환. */
 function displayTeamName(raw: string): string {
   const team = findTeamByRawCode(raw);
   return team?.shortName ?? raw;
@@ -255,16 +250,26 @@ export default function Home() {
     return findTeam(myTeamCode);
   }, [myTeamCode]);
 
+  const { widget } = useTeamWidget(myTeamCode);
+
   const handleNavigateDetail = (gameId: string) => {
     navigate(`/game/${gameId}`);
   };
 
+  const hasTodayGames = !isLoading && error === null && games.length > 0;
+  const isEmptyToday = !isLoading && error === null && games.length === 0;
+
   return (
     <main
       className="flex min-h-dvh flex-col px-5 pt-10"
-      style={{ background: SURFACE, color: TEXT_STRONG, fontFamily: KOREAN_STACK, paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
+      style={{
+        background: SURFACE,
+        color: TEXT_STRONG,
+        fontFamily: KOREAN_STACK,
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)",
+      }}
     >
-      {/* 상단: 응원팀 배지 (커스텀 헤더 아님 — 본문 콘텐츠) */}
+      {/* 상단: 응원팀 배지 */}
       <section className="flex flex-col gap-1 pb-6">
         <p
           className="text-[12px] font-medium uppercase tracking-wide"
@@ -275,7 +280,9 @@ export default function Home() {
         {myTeam !== null ? (
           <h1 className="text-[22px] font-bold leading-tight tracking-tight">
             <span style={{ color: myTeam.color }}>{myTeam.shortName}</span>
-            <span style={{ color: TEXT_STRONG }}> 오늘 경기는요</span>
+            <span style={{ color: TEXT_STRONG }}>
+              {isEmptyToday ? " 오늘은 쉬는 날" : " 오늘 경기는요"}
+            </span>
           </h1>
         ) : (
           <h1 className="text-[22px] font-bold leading-tight tracking-tight">
@@ -283,6 +290,13 @@ export default function Home() {
           </h1>
         )}
       </section>
+
+      {/* F014: 응원팀 시즌 위젯 — 응원팀 선택 + widget 데이터가 있을 때만 */}
+      {myTeam !== null && widget !== null && (
+        <section className="pb-6">
+          <TeamSeasonWidget widget={widget} myTeam={myTeam} />
+        </section>
+      )}
 
       {/* 본문: 로딩 / 에러 / 빈 상태 / 경기 목록 */}
       <section className="flex flex-1 flex-col gap-6">
@@ -310,24 +324,75 @@ export default function Home() {
               다시 시도
             </button>
           </div>
-        ) : games.length === 0 ? (
-          <div
-            className="flex flex-col items-center gap-3 rounded-2xl px-5 py-12"
-            style={{ background: SURFACE_ELEVATED }}
-          >
-            <span className="text-[40px] leading-none" aria-hidden="true">
-              ⚾
-            </span>
-            <p className="text-[15px] font-semibold" style={{ color: TEXT_STRONG }}>
-              오늘은 경기가 없어요
-            </p>
-            <p className="text-[13px]" style={{ color: TEXT_WEAK }}>
-              경기가 있는 날 알림을 보내드릴게요.
-            </p>
-          </div>
+        ) : isEmptyToday ? (
+          // F014: 응원팀이 있으면 LastGameCard + Countdown, 없으면 단순 메시지
+          myTeam !== null && widget !== null ? (
+            <div className="flex flex-col gap-4">
+              {widget.lastGame !== null && (
+                <div className="flex flex-col gap-2">
+                  <span
+                    className="text-[12px] font-medium"
+                    style={{ color: TEXT_WEAK }}
+                  >
+                    어제 결과
+                  </span>
+                  <LastGameCard
+                    lastGame={widget.lastGame}
+                    myTeam={myTeam}
+                    onNavigate={handleNavigateDetail}
+                  />
+                </div>
+              )}
+              {widget.nextGame !== null && (
+                <CountdownToNextGame
+                  nextGame={widget.nextGame}
+                  myTeam={myTeam}
+                />
+              )}
+              {widget.lastGame === null && widget.nextGame === null && (
+                <div
+                  className="flex flex-col items-center gap-3 rounded-2xl px-5 py-12"
+                  style={{ background: SURFACE_ELEVATED }}
+                >
+                  <span className="text-[40px] leading-none" aria-hidden="true">
+                    ⚾
+                  </span>
+                  <p
+                    className="text-[15px] font-semibold"
+                    style={{ color: TEXT_STRONG }}
+                  >
+                    오늘은 경기가 없어요
+                  </p>
+                  <p
+                    className="text-[13px]"
+                    style={{ color: TEXT_WEAK }}
+                  >
+                    경기가 있는 날 알림을 보내드릴게요.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              className="flex flex-col items-center gap-3 rounded-2xl px-5 py-12"
+              style={{ background: SURFACE_ELEVATED }}
+            >
+              <span className="text-[40px] leading-none" aria-hidden="true">
+                ⚾
+              </span>
+              <p
+                className="text-[15px] font-semibold"
+                style={{ color: TEXT_STRONG }}
+              >
+                오늘은 경기가 없어요
+              </p>
+              <p className="text-[13px]" style={{ color: TEXT_WEAK }}>
+                경기가 있는 날 알림을 보내드릴게요.
+              </p>
+            </div>
+          )
         ) : (
-          // 통합 리스트: 시간 순 그대로(서버 정렬 사용). 응원팀 경기는
-          // GameRow 내부 isMine 강조(BRAND 테두리 + boxShadow + "내 팀" 라벨).
+          // 통합 리스트: 시간 순 그대로(서버 정렬 사용)
           <div className="flex flex-col gap-3">
             {games.map((game) => (
               <GameRow
@@ -342,7 +407,7 @@ export default function Home() {
       </section>
 
       {/* 하단 안내 — 종료된 경기만 결과 화면으로 이동 가능 */}
-      {!isLoading && error === null && games.length > 0 && (
+      {hasTodayGames && (
         <p
           className="pt-6 text-center text-[12px]"
           style={{ color: TEXT_WEAK }}
