@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
       return NextResponse.json({
-        user: { id: user.id, team_code: user.team_code, subscribed: user.subscribed },
+        user: {
+          id: user.id,
+          team_code: user.team_code,
+          subscribed: user.subscribed,
+          notify_finish: user.notify_finish,
+          notify_cancel: user.notify_cancel,
+        },
       })
     }
 
@@ -39,6 +45,9 @@ export async function GET(request: NextRequest) {
           id: 'guest',
           team_code: guestTeam,
           subscribed: guestTeam !== null,
+          // F013: 게스트는 디폴트(둘 다 true) — 실 사용자 전환 시 DB 디폴트와 일치
+          notify_finish: true,
+          notify_cancel: true,
         },
       })
     }
@@ -58,6 +67,8 @@ export async function GET(request: NextRequest) {
         id: user.id,
         team_code: user.team_code,
         subscribed: user.subscribed,
+        notify_finish: user.notify_finish,
+        notify_cancel: user.notify_cancel,
       },
     })
   } catch (error: unknown) {

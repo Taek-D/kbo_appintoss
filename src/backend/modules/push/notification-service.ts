@@ -36,11 +36,18 @@ async function sendNotificationsForGame(
   const { homeTeam, awayTeam } = game
 
   // 1. 구독자 조회 (홈팀 + 원정팀)
+  //    F013: 사용자가 해당 알림 종류를 켜둔 경우에만 발송.
+  //    finished → notify_finish=true, cancelled → notify_cancel=true.
+  //    마스터 스위치(subscribed)는 AND 조건으로 유지.
+  const flagField: 'notify_finish' | 'notify_cancel' =
+    toStatus === 'finished' ? 'notify_finish' : 'notify_cancel'
+
   const { data: users, error: usersError } = await supabase
     .from('kbo_users')
     .select('id, toss_user_key')
     .in('team_code', [homeTeam, awayTeam])
     .eq('subscribed', true)
+    .eq(flagField, true)
 
   if (usersError) {
     logger.error({ err: usersError, gameId }, 'Failed to fetch subscribers')

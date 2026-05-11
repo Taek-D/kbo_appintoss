@@ -68,7 +68,14 @@ export async function PUT(request: NextRequest) {
     if (userId === 'guest') {
       const res = NextResponse.json({
         success: true,
-        user: { id: 'guest', team_code: parsed.data.team_code, subscribed: true },
+        // F013: 게스트는 알림 선호 디폴트(true/true)로 응답 (서버 저장 없음)
+        user: {
+          id: 'guest',
+          team_code: parsed.data.team_code,
+          subscribed: true,
+          notify_finish: true,
+          notify_cancel: true,
+        },
       })
       // 토스 WebView(Origin: null)에서는 Set-Cookie가 WebKit fetch 차단을 유발하므로 생략한다.
       // WebView는 인증 후 Bearer 토큰으로 동작하므로 게스트 쿠키 자체가 필요 없다.
@@ -113,7 +120,14 @@ export async function DELETE(request: NextRequest) {
     if (userId === 'guest') {
       const res = NextResponse.json({
         success: true,
-        user: { id: 'guest', team_code: null, subscribed: false },
+        // F013: 마스터 OFF 상태에서도 알림 선호 디폴트값은 유지 (재구독 시 즉시 적용)
+        user: {
+          id: 'guest',
+          team_code: null,
+          subscribed: false,
+          notify_finish: true,
+          notify_cancel: true,
+        },
       })
       res.cookies.delete('guest_team')
       return res

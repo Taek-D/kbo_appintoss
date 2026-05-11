@@ -8,6 +8,7 @@ export {
   getUserByTossKey,
   updateTeamCode,
   updateSubscription,
+  updateNotificationPrefs,
 } from './user-repository'
 
 export {

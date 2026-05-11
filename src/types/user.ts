@@ -32,6 +32,25 @@ export type User = {
   toss_user_key: string
   team_code: TeamCode | null
   subscribed: boolean
+  /**
+   * F013: 경기 종료 알림 수신 여부.
+   * 실제 발송은 (subscribed AND notify_finish) 양쪽 모두 true일 때만 일어난다.
+   */
+  notify_finish: boolean
+  /**
+   * F013: 경기 취소 알림 수신 여부.
+   * 실제 발송은 (subscribed AND notify_cancel) 양쪽 모두 true일 때만 일어난다.
+   */
+  notify_cancel: boolean
   created_at: string
   updated_at: string
+}
+
+/**
+ * F013: 알림 종류별 선호 (PATCH /api/notification-preferences body).
+ * 부분 갱신을 허용하므로 두 필드 모두 optional이지만, 최소 한 개는 반드시 포함되어야 한다.
+ */
+export type NotificationPreferences = {
+  notify_finish?: boolean
+  notify_cancel?: boolean
 }

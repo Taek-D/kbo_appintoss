@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { logger } from '@/lib/logger'
-import type { TeamCode, User } from '@/types/user'
+import type { NotificationPreferences, TeamCode, User } from '@/types/user'
 
 /**
  * TeamCode 런타임 검증용 Zod 스키마
@@ -128,6 +128,41 @@ export async function updateSubscription(userId: string, subscribed: boolean): P
   if (error) {
     logger.error({ error, userId, subscribed }, 'updateSubscription 실패')
     throw new Error(`구독 상태 업데이트 실패: ${error.message}`)
+  }
+
+  return data as User
+}
+
+/**
+ * F013: 알림 종류별 선호 갱신.
+ * 부분 갱신을 지원하며, 최소 한 개 이상의 필드가 포함되어야 한다 (라우트 단의 Zod에서 사전 검증).
+ * 마스터 스위치(subscribed)는 별도 — 이 함수는 종류별 플래그만 다룬다.
+ */
+export async function updateNotificationPrefs(
+  userId: string,
+  prefs: NotificationPreferences,
+): Promise<User> {
+  // 어느 필드도 정의되지 않은 경우 방어 (라우트에서 이미 검증되지만 이중 안전망)
+  if (prefs.notify_finish === undefined && prefs.notify_cancel === undefined) {
+    throw new Error('최소 한 개 알림 선호 필드가 필요합니다')
+  }
+
+  const payload: Record<string, boolean> = {}
+  if (prefs.notify_finish !== undefined) payload.notify_finish = prefs.notify_finish
+  if (prefs.notify_cancel !== undefined) payload.notify_cancel = prefs.notify_cancel
+
+  const supabase = await createServerSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('kbo_users')
+    .update(payload)
+    .eq('id', userId)
+    .select()
+    .single()
+
+  if (error) {
+    logger.error({ error, userId, payload }, 'updateNotificationPrefs 실패')
+    throw new Error(`알림 선호 업데이트 실패: ${error.message}`)
   }
 
   return data as User
