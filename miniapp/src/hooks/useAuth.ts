@@ -16,7 +16,26 @@ export interface AuthUser {
   id: string;
   team_code: string | null;
   subscribed: boolean;
+  /**
+   * F013: 경기 종료 알림 수신 여부.
+   * 실제 발송은 (subscribed AND notify_finish) 양쪽 모두 true일 때만 일어난다.
+   */
+  notify_finish: boolean;
+  /**
+   * F013: 경기 취소 알림 수신 여부.
+   * 실제 발송은 (subscribed AND notify_cancel) 양쪽 모두 true일 때만 일어난다.
+   */
+  notify_cancel: boolean;
 }
+
+/**
+ * F013: 알림 종류별 선호 부분 갱신 페이로드.
+ * 최소 한 필드는 정의되어야 한다 (서버 Zod에서 사전 검증).
+ */
+export type NotificationPreferencesInput = {
+  notify_finish?: boolean;
+  notify_cancel?: boolean;
+};
 
 interface LoginResponse {
   success: true;
@@ -66,6 +85,23 @@ async function deleteSubscription(): Promise<AuthUser> {
   const { user } = await apiFetch<SubscriptionResponse>("/api/subscription", {
     method: "DELETE",
   });
+  return user;
+}
+
+/**
+ * F013: PATCH /api/notification-preferences.
+ * 알림 종류별 선호를 부분 갱신한다 (마스터 스위치는 별도 — subscription API).
+ */
+async function patchNotificationPrefs(
+  prefs: NotificationPreferencesInput,
+): Promise<AuthUser> {
+  const { user } = await apiFetch<SubscriptionResponse>(
+    "/api/notification-preferences",
+    {
+      method: "PATCH",
+      body: JSON.stringify(prefs),
+    },
+  );
   return user;
 }
 
@@ -130,6 +166,35 @@ export function useAuth() {
     },
   });
 
+  /**
+   * F013: 알림 종류별 선호 갱신.
+   * Optimistic Update — 토글 즉시 반영, 실패 시 이전 상태로 롤백.
+   */
+  const updatePrefsMutation = useMutation({
+    mutationFn: patchNotificationPrefs,
+    onMutate: async (prefs) => {
+      // 진행 중인 me 쿼리 무력화 (race condition 방지)
+      await queryClient.cancelQueries({ queryKey: AUTH_QUERY_KEY });
+      const previous = queryClient.getQueryData<AuthUser>(AUTH_QUERY_KEY);
+      if (previous) {
+        queryClient.setQueryData<AuthUser>(AUTH_QUERY_KEY, {
+          ...previous,
+          ...prefs,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      // 롤백
+      if (ctx?.previous) {
+        queryClient.setQueryData(AUTH_QUERY_KEY, ctx.previous);
+      }
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+    },
+  });
+
   const logout = useCallback(() => {
     // TODO(F003-followup): 서버 측 logout 엔드포인트 호출 (쿠키 제거)
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
@@ -175,6 +240,11 @@ export function useAuth() {
     [user, selectTeamMutation, unsubscribeMutation],
   );
 
+  const updatePrefsError =
+    updatePrefsMutation.error instanceof Error
+      ? updatePrefsMutation.error.message
+      : null;
+
   return {
     user,
     isLoggedIn: user !== null && user.id !== "guest",
@@ -190,5 +260,9 @@ export function useAuth() {
     isTogglingSubscription:
       unsubscribeMutation.isPending || selectTeamMutation.isPending,
     toggleSubscriptionError,
+    /** F013: 알림 종류별 선호 부분 갱신. Optimistic Update. */
+    updateNotificationPrefs: updatePrefsMutation.mutateAsync,
+    isUpdatingPrefs: updatePrefsMutation.isPending,
+    updatePrefsError,
   };
 }

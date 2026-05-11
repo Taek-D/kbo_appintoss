@@ -174,6 +174,23 @@
       "passes": true,
       "sdkBlock": null,
       "notes": "harness-validate 전체 PASS (N1~N6, A1~A4, C1~C3) + 11단계 출시 체크리스트 코드 수준 전체 PASS. 고아 파일(Brainstorm.tsx, Index.tsx) 삭제, toss-login.ts TS2448 수정. 콘솔 등록 전 준비 필요: 600x600 로고 에셋, 콜백 URL 등록, 프로덕션 ALLOWED_ORIGINS env."
+    },
+    {
+      "id": "F013",
+      "category": "logic",
+      "description": "알림 세분화 토글 (PRD-013)",
+      "steps": [
+        "DB 마이그레이션: kbo_users에 notify_finish, notify_cancel 컬럼 추가",
+        "user-repository.updateNotificationPrefs() 신규",
+        "PATCH /api/notification-preferences 라우트 신규 (Zod 검증)",
+        "GET /api/auth/me + PUT/DELETE /api/subscription 응답에 notify_X 포함",
+        "notification-service: 발송 SQL에 .eq(flagField, true) 추가",
+        "miniapp useAuth.ts: AuthUser 확장 + Optimistic Update mutation",
+        "Settings.tsx: 알림 카드 1개 → 2개 토글 + 마스터 텍스트 버튼"
+      ],
+      "passes": false,
+      "sdkBlock": null,
+      "notes": "PRD-013 v1.1 기준. start 알림은 백엔드 발송 로직 없어 이번 라운드 제외. 게스트(id='guest')는 인메모리 응답만, 서버 저장 없음. 마스터 스위치(subscribed)와 종류 플래그(notify_X)는 AND 조건. 타입체크/lint/실환경 검증은 commit 직전 라운드."
     }
   ]
 }
