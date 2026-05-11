@@ -28,6 +28,7 @@
 
 # OMC runtime state (memory, sessions, state, checkpoints)
 /.omc/
+/miniapp/.omc/
 
 # Claude Code agent worktrees (runtime-only, never committed)
 /.claude/worktrees/

@@ -1,7 +1,0 @@
-{
-  "tool_name": "WebFetch",
-  "tool_input_preview": "{\"url\":\"https://developers-apps-in-toss.toss.im/bedrock/guides/overview.html\",\"prompt\":\"앱인토스 미니앱 개발 개요에서 다음을 찾아줘:\\n1. 미니앱에서 서버 API를 호출하는 방법\\n2. WebView 네트워크 제한사항\\n3. 서버를 별도 도메인에 둘 수 있는지\\n4. granite.co...",
-  "error": "Request failed with status code 404",
-  "timestamp": "2026-04-16T07:03:59.082Z",
-  "retry_count": 2
-}
